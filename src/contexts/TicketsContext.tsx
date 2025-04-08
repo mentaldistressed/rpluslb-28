@@ -1,9 +1,9 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Ticket, Message, User } from "@/types";
-import { tickets as initialTickets, messages as initialMessages, users } from "@/lib/mock-data";
 import { useAuth } from "./AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TicketsContextType {
   tickets: Ticket[];
@@ -23,16 +23,110 @@ const TicketsContext = createContext<TicketsContextType | undefined>(undefined);
 export function TicketsProvider({ children }: { children: ReactNode }) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Initialize with mock data
-    // In a real app, you would fetch this from your API
-    setTickets(initialTickets);
-    setMessages(initialMessages);
-    setIsLoading(false);
+    const fetchInitialData = async () => {
+      setIsLoading(true);
+      
+      // Fetch users (profiles)
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
+        
+      if (profilesError) {
+        console.error("Error fetching profiles:", profilesError);
+      } else if (profiles) {
+        const mappedUsers = profiles.map(profile => ({
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          role: profile.role as "admin" | "sublabel",
+          avatar: profile.avatar
+        }));
+        setUsers(mappedUsers);
+      }
+      
+      // Fetch tickets
+      const { data: fetchedTickets, error: ticketsError } = await supabase
+        .from('tickets')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (ticketsError) {
+        console.error("Error fetching tickets:", ticketsError);
+      } else if (fetchedTickets) {
+        const mappedTickets: Ticket[] = fetchedTickets.map(ticket => ({
+          id: ticket.id,
+          title: ticket.title,
+          description: ticket.description,
+          status: ticket.status as "open" | "in-progress" | "closed",
+          priority: ticket.priority as "low" | "medium" | "high",
+          createdAt: ticket.created_at,
+          updatedAt: ticket.updated_at,
+          createdBy: ticket.created_by,
+          assignedTo: ticket.assigned_to
+        }));
+        setTickets(mappedTickets);
+      }
+      
+      // Fetch messages
+      const { data: fetchedMessages, error: messagesError } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: true });
+        
+      if (messagesError) {
+        console.error("Error fetching messages:", messagesError);
+      } else if (fetchedMessages) {
+        const mappedMessages: Message[] = fetchedMessages.map(message => ({
+          id: message.id,
+          ticketId: message.ticket_id,
+          content: message.content,
+          createdAt: message.created_at,
+          userId: message.user_id
+        }));
+        setMessages(mappedMessages);
+      }
+      
+      setIsLoading(false);
+    };
+    
+    fetchInitialData();
+    
+    // Set up realtime subscription for tickets
+    const ticketsSubscription = supabase
+      .channel('public:tickets')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'tickets' 
+      }, payload => {
+        console.log('Tickets change received:', payload);
+        fetchInitialData();
+      })
+      .subscribe();
+      
+    // Set up realtime subscription for messages
+    const messagesSubscription = supabase
+      .channel('public:messages')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'messages' 
+      }, payload => {
+        console.log('Messages change received:', payload);
+        fetchInitialData();
+      })
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(ticketsSubscription);
+      supabase.removeChannel(messagesSubscription);
+    };
   }, []);
 
   const getTicketById = (id: string) => {
@@ -52,89 +146,129 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newTicket: Ticket = {
-      id: `ticket-${Date.now()}`,
-      title,
-      description,
-      status: "open",
-      priority,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      createdBy: user.id
-    };
-    
-    const newMessage: Message = {
-      id: `message-${Date.now()}`,
-      ticketId: newTicket.id,
-      content: description,
-      createdAt: new Date().toISOString(),
-      userId: user.id
-    };
-    
-    setTickets(prev => [...prev, newTicket]);
-    setMessages(prev => [...prev, newMessage]);
-    
-    toast({
-      title: "Тикет создан",
-      description: "Ваш тикет был успешно создан",
-    });
-    
-    setIsLoading(false);
-    return newTicket.id;
+    try {
+      // Insert ticket into database
+      const { data: newTicket, error: ticketError } = await supabase
+        .from('tickets')
+        .insert({
+          title,
+          description,
+          status: 'open',
+          priority,
+          created_by: user.id
+        })
+        .select()
+        .single();
+        
+      if (ticketError) {
+        throw ticketError;
+      }
+      
+      // Insert initial message (description)
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          ticket_id: newTicket.id,
+          content: description,
+          user_id: user.id
+        });
+        
+      if (messageError) {
+        console.error("Error creating initial message:", messageError);
+      }
+      
+      toast({
+        title: "Тикет создан",
+        description: "Ваш тикет был успешно создан",
+      });
+      
+      setIsLoading(false);
+      return newTicket.id;
+    } catch (error) {
+      console.error("Error creating ticket:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать тикет",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      throw error;
+    }
   };
 
   const updateTicketStatus = async (ticketId: string, status: Ticket["status"]): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    setTickets(prev => 
-      prev.map(ticket => 
-        ticket.id === ticketId 
-          ? { ...ticket, status, updatedAt: new Date().toISOString() } 
-          : ticket
-      )
-    );
-    
-    toast({
-      title: "Статус обновлен",
-      description: `Статус тикета изменен на "${
-        status === 'open' ? 'Открыт' : 
-        status === 'in-progress' ? 'В работе' : 'Закрыт'
-      }"`,
-    });
-    
-    setIsLoading(false);
-    return true;
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', ticketId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Статус обновлен",
+        description: `Статус тикета изменен на "${
+          status === 'open' ? 'Открыт' : 
+          status === 'in-progress' ? 'В работе' : 'Закрыт'
+        }"`,
+      });
+      
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Error updating ticket status:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить статус тикета",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return false;
+    }
   };
 
   const assignTicket = async (ticketId: string, userId: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    setTickets(prev => 
-      prev.map(ticket => 
-        ticket.id === ticketId 
-          ? { ...ticket, assignedTo: userId, updatedAt: new Date().toISOString() } 
-          : ticket
-      )
-    );
-    
-    const assignedUser = users.find(u => u.id === userId);
-    
-    toast({
-      title: "Тикет назначен",
-      description: `Тикет назначен на ${assignedUser?.name || "пользователя"}`,
-    });
-    
-    setIsLoading(false);
-    return true;
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({ 
+          assigned_to: userId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', ticketId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      const assignedUser = users.find(u => u.id === userId);
+      
+      toast({
+        title: "Тикет назначен",
+        description: `Тикет назначен на ${assignedUser?.name || "пользователя"}`,
+      });
+      
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Error assigning ticket:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось назначить тикет",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return false;
+    }
   };
 
   const addMessage = async (ticketId: string, content: string): Promise<boolean> => {
@@ -142,30 +276,42 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const newMessage: Message = {
-      id: `message-${Date.now()}`,
-      ticketId,
-      content,
-      createdAt: new Date().toISOString(),
-      userId: user.id
-    };
-    
-    setMessages(prev => [...prev, newMessage]);
-    
-    // Update the ticket's updatedAt time
-    setTickets(prev => 
-      prev.map(ticket => 
-        ticket.id === ticketId 
-          ? { ...ticket, updatedAt: new Date().toISOString() } 
-          : ticket
-      )
-    );
-    
-    setIsLoading(false);
-    return true;
+    try {
+      // Add message to database
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          ticket_id: ticketId,
+          content,
+          user_id: user.id
+        });
+        
+      if (messageError) {
+        throw messageError;
+      }
+      
+      // Update ticket's updated_at time
+      const { error: ticketError } = await supabase
+        .from('tickets')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', ticketId);
+        
+      if (ticketError) {
+        console.error("Error updating ticket timestamp:", ticketError);
+      }
+      
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Error adding message:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отправить сообщение",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return false;
+    }
   };
 
   return (

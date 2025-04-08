@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 id: session.user.id,
                 email: profile.email,
                 name: profile.name,
-                role: profile.role,
+                role: profile.role as "admin" | "sublabel",
                 avatar: profile.avatar
               });
             }
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 id: session.user.id,
                 email: profile.email,
                 name: profile.name,
-                role: profile.role,
+                role: profile.role as "admin" | "sublabel",
                 avatar: profile.avatar
               });
             }
