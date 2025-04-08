@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,15 @@ export default function UsersPage() {
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserRole, setNewUserRole] = useState<UserRole>("sublabel");
   const [useGeneratedPassword, setUseGeneratedPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   
   useEffect(() => {
@@ -82,6 +92,58 @@ export default function UsersPage() {
       fetchUsers();
     }
   }, [user]);
+  
+  const handleRegisterS = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (registerPassword !== registerPasswordConfirm) {
+      toast({
+        title: "Ошибка регистрации",
+        description: "Пароли не совпадают",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRegistering(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: registerEmail,
+        password: registerPassword,
+        options: {
+          data: {
+            name: name,
+            role: "sublabel",
+          },
+        },
+      });
+      
+      if (error) {
+        toast({
+          title: "Ошибка регистрации",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Регистрация успешна",
+          description: "Теперь вы можете войти в систему",
+        });
+        setEmail(registerEmail);
+        setPassword(registerPassword);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Ошибка регистрации",
+        description: "Произошла неизвестная ошибка при регистрации",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
   
   const generateRandomPassword = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
@@ -306,7 +368,67 @@ export default function UsersPage() {
           </DialogContent>
         </Dialog>
       </div>
-      
+      <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
+                Создать аккаунт саб-лейбла
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Регистрация саб-лейбла</DialogTitle>
+                <DialogDescription>
+                  Создайте аккаунт саб-лейбла
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleRegisterS} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Имя</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email</Label>
+                  <Input
+                    id="register-email"
+                    type="email"
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Пароль</Label>
+                  <Input
+                    id="register-password"
+                    type="password"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password-confirm">Подтверждение пароля</Label>
+                  <Input
+                    id="register-password-confirm"
+                    type="password"
+                    value={registerPasswordConfirm}
+                    onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
+                    required
+                  />
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={isRegistering}>
+                    {isRegistering ? "Регистрация..." : "Зарегистрироваться"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
       <Card>
         <CardHeader>
           <CardTitle>Список пользователей</CardTitle>

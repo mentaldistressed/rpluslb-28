@@ -40,7 +40,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegisterA = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (registerPassword !== registerPasswordConfirm) {
@@ -62,6 +62,58 @@ export default function LoginPage() {
           data: {
             name: name,
             role: "admin",
+          },
+        },
+      });
+      
+      if (error) {
+        toast({
+          title: "Ошибка регистрации",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Регистрация успешна",
+          description: "Теперь вы можете войти в систему",
+        });
+        setEmail(registerEmail);
+        setPassword(registerPassword);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Ошибка регистрации",
+        description: "Произошла неизвестная ошибка при регистрации",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleRegisterS = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (registerPassword !== registerPasswordConfirm) {
+      toast({
+        title: "Ошибка регистрации",
+        description: "Пароли не совпадают",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRegistering(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: registerEmail,
+        password: registerPassword,
+        options: {
+          data: {
+            name: name,
+            role: "sublabel",
           },
         },
       });
@@ -143,11 +195,11 @@ export default function LoginPage() {
         </Card>
         
         <div className="mt-6 text-center">
-          <Dialog>
+                    <Dialog>
             <DialogTrigger asChild>
-              <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
+              {/* <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
                 Создать аккаунт администратора
-              </Button>
+              </Button> */}
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -156,7 +208,68 @@ export default function LoginPage() {
                   Создайте аккаунт администратора для управления системой
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleRegister} className="space-y-4 py-4">
+              <form onSubmit={handleRegisterA} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Имя</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email</Label>
+                  <Input
+                    id="register-email"
+                    type="email"
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Пароль</Label>
+                  <Input
+                    id="register-password"
+                    type="password"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password-confirm">Подтверждение пароля</Label>
+                  <Input
+                    id="register-password-confirm"
+                    type="password"
+                    value={registerPasswordConfirm}
+                    onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
+                    required
+                  />
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={isRegistering}>
+                    {isRegistering ? "Регистрация..." : "Зарегистрироваться"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+          <Dialog>
+            <DialogTrigger asChild>
+              {/* <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
+                Создать аккаунт администратора
+              </Button> */}
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Регистрация администратора</DialogTitle>
+                <DialogDescription>
+                  Создайте аккаунт администратора для управления системой
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleRegisterA} className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Имя</Label>
                   <Input
