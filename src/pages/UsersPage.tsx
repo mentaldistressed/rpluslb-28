@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/table";
 import { UserAvatar } from "@/components/UserAvatar";
 import { UserRole } from "@/types";
-import { Plus } from "lucide-react";
+import { Copy, Plus, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types";
@@ -45,6 +45,7 @@ export default function UsersPage() {
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserRole, setNewUserRole] = useState<UserRole>("sublabel");
+  const [useGeneratedPassword, setUseGeneratedPassword] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -82,6 +83,31 @@ export default function UsersPage() {
     }
   }, [user]);
   
+  const generateRandomPassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewUserPassword(password);
+    return password;
+  };
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Скопировано в буфер обмена",
+      description: "Данные скопированы в буфер обмена",
+    });
+  };
+  
+  const handleTogglePasswordType = () => {
+    if (!useGeneratedPassword) {
+      generateRandomPassword();
+    }
+    setUseGeneratedPassword(!useGeneratedPassword);
+  };
+
   if (!user || user.role !== 'admin') {
     return (
       <div className="text-center py-12">
@@ -147,6 +173,7 @@ export default function UsersPage() {
         setNewUserEmail("");
         setNewUserPassword("");
         setNewUserRole("sublabel");
+        setUseGeneratedPassword(false);
         setIsDialogOpen(false);
       }
     } catch (error) {
@@ -203,13 +230,45 @@ export default function UsersPage() {
               
               <div className="space-y-2">
                 <Label htmlFor="password">Пароль</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={newUserPassword}
-                  onChange={(e) => setNewUserPassword(e.target.value)}
-                  placeholder="Пароль"
-                />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="password"
+                      type="text"
+                      value={newUserPassword}
+                      onChange={(e) => setNewUserPassword(e.target.value)}
+                      placeholder="Пароль"
+                      readOnly={useGeneratedPassword}
+                      className="pr-10"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon"
+                      className="absolute right-0 top-0 h-full"
+                      onClick={() => copyToClipboard(newUserPassword)}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleTogglePasswordType}
+                  >
+                    {useGeneratedPassword ? "Ввести вручную" : "Сгенерировать"}
+                  </Button>
+                  {useGeneratedPassword && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={generateRandomPassword}
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -226,6 +285,18 @@ export default function UsersPage() {
                     <SelectItem value="sublabel">Саб-лейбл</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              <div className="mt-4">
+                <Button
+                  type="button"
+                  onClick={() => copyToClipboard(`Email: ${newUserEmail}\nПароль: ${newUserPassword}`)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Скопировать все данные
+                </Button>
               </div>
             </div>
             

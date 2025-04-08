@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Don't make Supabase calls inside the callback to prevent deadlocks
           setTimeout(async () => {
             // Get the user profile from the profiles table
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
@@ -43,6 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 role: profile.role,
                 avatar: profile.avatar
               });
+            }
+            
+            if (error) {
+              console.error("Error fetching profile:", error);
             }
           }, 0);
         } else {
@@ -61,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .select('*')
           .eq('id', session.user.id)
           .single()
-          .then(({ data: profile }) => {
+          .then(({ data: profile, error }) => {
             if (profile) {
               setUser({
                 id: session.user.id,
@@ -71,6 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 avatar: profile.avatar
               });
             }
+            
+            if (error) {
+              console.error("Error fetching profile:", error);
+            }
+            
             setIsLoading(false);
           });
       } else {
