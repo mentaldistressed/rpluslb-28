@@ -29,14 +29,14 @@ export default function LoginPage() {
             <span className="font-extrabold">r</span>
             <span className="font-light">plus</span>
           </h1>
-          <p className="text-muted-foreground">Система управления тикетами</p>
+          <p className="text-muted-foreground">Вход в панель управления</p>
         </div>
         
         <Card>
           <CardHeader>
             <CardTitle>Вход в систему</CardTitle>
             <CardDescription>
-              Введите ваши данные для входа в систему управления тикетами.
+              Введите данные для входа в личный кабинет
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -72,9 +72,8 @@ export default function LoginPage() {
         </Card>
         
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>Тестовые пользователи:</p>
-          <p>admin@rpluslb.ru / password (Администратор)</p>
-          <p>info@rsvtlabel.ru / password (Саб-лейбл)</p>
+          <p>Регистрация пользователей отключена.</p>
+          <p>Если у Вас нет аккаунта — обратитесь к @amirknyazev</p>
         </div>
       </div>
     </div>
