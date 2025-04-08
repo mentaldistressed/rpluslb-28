@@ -22,8 +22,8 @@ export default function Header() {
       <div className="h-16 flex items-center justify-between px-6">
         <div className="flex items-center space-x-2">
           <div className="text-xl font-medium">
-            {/* <span className="font-extrabold">r</span> */}
-            <span className="font-light">rplus</span>
+            <span className="font-extrabold">rplus </span>
+            <span className="font-light">» ЛКПО</span>
           </div>
         </div>
         
@@ -42,14 +42,14 @@ export default function Header() {
                     {user.email}
                   </p>
                   <p className="text-xs font-medium text-muted-foreground mt-1">
-                    {user.role === 'admin' ? 'Администратор' : 'Саб-лейбл'}
+                    {user.role === 'admin' ? 'администратор' : 'саб-лейбл'}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Выйти</span>
+                <span>выйти</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

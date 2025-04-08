@@ -65,12 +65,12 @@ export default function TicketsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Тикеты</h1>
+        <h1 className="text-2xl font-bold">тикеты</h1>
         {user.role === 'sublabel' && (
           <Link to="/tickets/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Новый тикет
+              новый тикет
             </Button>
           </Link>
         )}
@@ -80,7 +80,7 @@ export default function TicketsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Поиск тикетов..."
+            placeholder="поиск тикетов..."
             className="pl-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -95,10 +95,10 @@ export default function TicketsPage() {
             <SelectValue placeholder="Все статусы" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все статусы</SelectItem>
-            <SelectItem value="open">Открытые</SelectItem>
-            <SelectItem value="in-progress">В работе</SelectItem>
-            <SelectItem value="closed">Закрытые</SelectItem>
+            <SelectItem value="all">все статусы</SelectItem>
+            <SelectItem value="open">открытые</SelectItem>
+            <SelectItem value="in-progress">в работе</SelectItem>
+            <SelectItem value="closed">закрытые</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -108,11 +108,11 @@ export default function TicketsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Тикет</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Приоритет</TableHead>
-                <TableHead>Последнее обновление</TableHead>
-                {user.role === 'admin' && <TableHead>Отправитель</TableHead>}
+                <TableHead>тикет</TableHead>
+                <TableHead>статус</TableHead>
+                <TableHead>приоритет</TableHead>
+                <TableHead>последнее обновление</TableHead>
+                {user.role === 'admin' && <TableHead>отправитель</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -148,14 +148,14 @@ export default function TicketsPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center border rounded-lg p-8 bg-muted/20">
-          <h3 className="text-lg font-medium">Тикетов не найдено</h3>
-          <p className="text-muted-foreground mt-1">Нет тикетов, соответствующих заданным критериям.</p>
+          <h3 className="text-lg font-medium">тикетов не найдено</h3>
+          <p className="text-muted-foreground mt-1">нет тикетов, соответствующих заданным критериям</p>
           
           {user.role === 'sublabel' && (
             <Link to="/tickets/new" className="mt-4">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Создать новый тикет
+                создать новый тикет
               </Button>
             </Link>
           )}

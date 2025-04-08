@@ -48,14 +48,14 @@ export default function TicketDetailPage() {
   if (!ticket) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold">Тикет не найден</h2>
-        <p className="text-muted-foreground mt-1">Запрашиваемый тикет не существует или был удалён</p>
+        <h2 className="text-xl font-semibold">тикет не найден</h2>
+        <p className="text-muted-foreground mt-1">запрашиваемый тикет не существует или был удалён</p>
         <Button 
           variant="outline" 
           className="mt-4"
           onClick={() => navigate("/tickets")}
         >
-          Вернуться к списку тикетов
+          вернуться к списку тикетов
         </Button>
       </div>
     );
@@ -92,7 +92,7 @@ export default function TicketDetailPage() {
           onClick={() => navigate("/tickets")}
         >
           <ArrowLeft className="h-4 w-4" />
-          Назад к тикетам
+          назад к тикетам
         </Button>
       </div>
       
@@ -101,9 +101,9 @@ export default function TicketDetailPage() {
           <div>
             <h1 className="text-2xl font-bold">{ticket.title}</h1>
             <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-              <span>Создан: {format(new Date(ticket.createdAt), "dd.MM.yyyy HH:mm")}</span>
+              <span>создан: {format(new Date(ticket.createdAt), "dd.MM.yyyy HH:mm")}</span>
               <span>•</span>
-              <span>Тикет #{ticket.id}</span>
+              <span>тикет #{ticket.id}</span>
             </div>
           </div>
           
@@ -120,9 +120,9 @@ export default function TicketDetailPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">Открыт</SelectItem>
-                  <SelectItem value="in-progress">В работе</SelectItem>
-                  <SelectItem value="closed">Закрыт</SelectItem>
+                  <SelectItem value="open">открыт</SelectItem>
+                  <SelectItem value="in-progress">в работе</SelectItem>
+                  <SelectItem value="closed">закрыт</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
@@ -136,7 +136,7 @@ export default function TicketDetailPage() {
           <div className="flex-1 order-2 md:order-1">
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Описание</CardTitle>
+                <CardTitle>описание</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-line">{ticket.description}</p>
@@ -192,7 +192,7 @@ export default function TicketDetailPage() {
               
               {messages.length === 0 && (
                 <div className="text-center py-8 bg-muted/20 border rounded-lg">
-                  <p className="text-muted-foreground">Пока нет сообщений в этом тикете</p>
+                  <p className="text-muted-foreground">пока нет сообщений в этом тикете</p>
                 </div>
               )}
             </div>
@@ -203,13 +203,13 @@ export default function TicketDetailPage() {
                 <Textarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Введите ваше сообщение..."
+                  placeholder="введите Ваше сообщение..."
                   className="mb-2"
                   rows={3}
                 />
                 <div className="flex justify-end">
                   <Button type="submit" disabled={isLoading || !newMessage.trim()}>
-                    {isLoading ? "Отправка..." : "Отправить"}
+                    {isLoading ? "отправка..." : "отправить"}
                   </Button>
                 </div>
               </form>
@@ -220,11 +220,11 @@ export default function TicketDetailPage() {
           <div className="w-full md:w-64 order-1 md:order-2">
             <Card>
               <CardHeader>
-                <CardTitle>Информация</CardTitle>
+                <CardTitle>информация</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-sm font-medium mb-1">Отправитель</div>
+                  <div className="text-sm font-medium mb-1">отправитель</div>
                   {creator && (
                     <div className="flex items-center gap-2">
                       <UserAvatar user={creator} size="sm" />
@@ -235,7 +235,7 @@ export default function TicketDetailPage() {
                 
                 {assignee && (
                   <div>
-                    <div className="text-sm font-medium mb-1">Назначен</div>
+                    <div className="text-sm font-medium mb-1">назначен</div>
                     <div className="flex items-center gap-2">
                       <UserAvatar user={assignee} size="sm" />
                       <div>{assignee.name}</div>
@@ -244,12 +244,12 @@ export default function TicketDetailPage() {
                 )}
                 
                 <div>
-                  <div className="text-sm font-medium mb-1">Создан</div>
+                  <div className="text-sm font-medium mb-1">создан</div>
                   <div className="text-sm">{format(new Date(ticket.createdAt), "dd.MM.yyyy HH:mm")}</div>
                 </div>
                 
                 <div>
-                  <div className="text-sm font-medium mb-1">Обновлен</div>
+                  <div className="text-sm font-medium mb-1">обновлен</div>
                   <div className="text-sm">{format(new Date(ticket.updatedAt), "dd.MM.yyyy HH:mm")}</div>
                 </div>
               </CardContent>

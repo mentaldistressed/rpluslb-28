@@ -98,8 +98,8 @@ export default function UsersPage() {
     
     if (registerPassword !== registerPasswordConfirm) {
       toast({
-        title: "Ошибка регистрации",
-        description: "Пароли не совпадают",
+        title: "ошибка регистрации",
+        description: "пароли не совпадают",
         variant: "destructive",
       });
       return;
@@ -121,14 +121,14 @@ export default function UsersPage() {
       
       if (error) {
         toast({
-          title: "Ошибка регистрации",
+          title: "ошибка регистрации",
           description: error.message,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Регистрация успешна",
-          description: "Теперь вы можете войти в систему",
+          title: "регистрация успешна",
+          description: "теперь вы можете войти в систему",
         });
         setEmail(registerEmail);
         setPassword(registerPassword);
@@ -136,8 +136,8 @@ export default function UsersPage() {
     } catch (error) {
       console.error("Registration error:", error);
       toast({
-        title: "Ошибка регистрации",
-        description: "Произошла неизвестная ошибка при регистрации",
+        title: "ошибка регистрации",
+        description: "произошла неизвестная ошибка при регистрации",
         variant: "destructive",
       });
     } finally {
@@ -158,8 +158,8 @@ export default function UsersPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Скопировано в буфер обмена",
-      description: "Данные скопированы в буфер обмена",
+      title: "скопировано в буфер обмена",
+      description: "данные скопированы в буфер обмена",
     });
   };
   
@@ -173,8 +173,8 @@ export default function UsersPage() {
   if (!user || user.role !== 'admin') {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold">Доступ запрещен</h2>
-        <p className="text-muted-foreground mt-1">У вас нет доступа к этой странице</p>
+        <h2 className="text-xl font-semibold">доступ запрещен</h2>
+        <p className="text-muted-foreground mt-1">у Вас нет доступа к этой странице</p>
       </div>
     );
   }
@@ -205,7 +205,7 @@ export default function UsersPage() {
       if (error) {
         console.error("Error creating user:", error);
         toast({
-          title: "Ошибка",
+          title: "ошибка",
           description: error.message,
           variant: "destructive",
         });
@@ -215,8 +215,8 @@ export default function UsersPage() {
       if (data.user) {
         // The profile should be created automatically by the trigger
         toast({
-          title: "Пользователь создан",
-          description: `Пользователь ${newUserName} успешно создан`,
+          title: "пользователь создан",
+          description: `пользователь ${newUserName} успешно создан`,
         });
         
         // Add the new user to the state
@@ -241,8 +241,8 @@ export default function UsersPage() {
     } catch (error) {
       console.error("Error creating user:", error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось создать пользователя",
+        title: "ошибка",
+        description: "не удалось создать пользователя",
         variant: "destructive",
       });
     }
@@ -251,47 +251,47 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Пользователи</h1>
+        <h1 className="text-2xl font-bold">пользователи</h1>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Новый пользователь
+              новый пользователь
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Создать нового пользователя</DialogTitle>
+              <DialogTitle>создать нового пользователя</DialogTitle>
               <DialogDescription>
-                Заполните информацию для создания нового пользователя
+                заполните информацию для создания нового пользователя
               </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Имя</Label>
+                <Label htmlFor="name">имя</Label>
                 <Input
                   id="name"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="Название саб-лейбла или имя пользователя"
+                  placeholder="название саб-лейбла или имя пользователя"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">почта</Label>
                 <Input
                   id="email"
                   type="email"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="example@domain.com"
+                  placeholder="mail@label.ru"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Пароль</Label>
+                <Label htmlFor="password">пароль</Label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Input
@@ -299,7 +299,7 @@ export default function UsersPage() {
                       type="text"
                       value={newUserPassword}
                       onChange={(e) => setNewUserPassword(e.target.value)}
-                      placeholder="Пароль"
+                      placeholder="пароль"
                       readOnly={useGeneratedPassword}
                       className="pr-10"
                     />
@@ -318,7 +318,7 @@ export default function UsersPage() {
                     variant="outline"
                     onClick={handleTogglePasswordType}
                   >
-                    {useGeneratedPassword ? "Ввести вручную" : "Сгенерировать"}
+                    {useGeneratedPassword ? "ввести вручную" : "сгенерировать"}
                   </Button>
                   {useGeneratedPassword && (
                     <Button
@@ -334,7 +334,7 @@ export default function UsersPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="role">Роль</Label>
+                <Label htmlFor="role">роль</Label>
                 <Select
                   value={newUserRole}
                   onValueChange={(value) => setNewUserRole(value as UserRole)}
@@ -343,8 +343,8 @@ export default function UsersPage() {
                     <SelectValue placeholder="Выберите роль" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Администратор</SelectItem>
-                    <SelectItem value="sublabel">Саб-лейбл</SelectItem>
+                    <SelectItem value="admin">администратор</SelectItem>
+                    <SelectItem value="sublabel">саб-лейбл</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -352,18 +352,18 @@ export default function UsersPage() {
               <div className="mt-4">
                 <Button
                   type="button"
-                  onClick={() => copyToClipboard(`Email: ${newUserEmail}\nПароль: ${newUserPassword}`)}
+                  onClick={() => copyToClipboard(`Вход в учётную запись partners.rpluslb.ru\n\nEmail: ${newUserEmail}\nПароль: ${newUserPassword}`)}
                   variant="outline"
                   className="w-full"
                 >
                   <Copy className="mr-2 h-4 w-4" />
-                  Скопировать все данные
+                  скопировать все данные
                 </Button>
               </div>
             </div>
             
             <DialogFooter>
-              <Button onClick={handleCreateUser}>Создать</Button>
+              <Button onClick={handleCreateUser}>создать</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -371,19 +371,19 @@ export default function UsersPage() {
       <Dialog>
             <DialogTrigger asChild>
               <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
-                Создать аккаунт саб-лейбла
+                создать аккаунт саб-лейбла
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Регистрация саб-лейбла</DialogTitle>
+                <DialogTitle>регистрация саб-лейбла</DialogTitle>
                 <DialogDescription>
-                  Создайте аккаунт саб-лейбла
+                  создайте аккаунт саб-лейбла
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleRegisterS} className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Имя</Label>
+                  <Label htmlFor="name">имя</Label>
                   <Input
                     id="name"
                     value={name}
@@ -392,7 +392,7 @@ export default function UsersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-email">Email</Label>
+                  <Label htmlFor="register-email">почта</Label>
                   <Input
                     id="register-email"
                     type="email"
@@ -402,7 +402,7 @@ export default function UsersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-password">Пароль</Label>
+                  <Label htmlFor="register-password">пароль</Label>
                   <Input
                     id="register-password"
                     type="password"
@@ -412,7 +412,7 @@ export default function UsersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-password-confirm">Подтверждение пароля</Label>
+                  <Label htmlFor="register-password-confirm">подтверждение пароля</Label>
                   <Input
                     id="register-password-confirm"
                     type="password"
@@ -423,7 +423,7 @@ export default function UsersPage() {
                 </div>
                 <DialogFooter>
                   <Button type="submit" disabled={isRegistering}>
-                    {isRegistering ? "Регистрация..." : "Зарегистрироваться"}
+                    {isRegistering ? "регистрация..." : "зарегистрироваться"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -431,25 +431,25 @@ export default function UsersPage() {
           </Dialog>
       <Card>
         <CardHeader>
-          <CardTitle>Список пользователей</CardTitle>
+          <CardTitle>список пользователей</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-4">Загрузка пользователей...</div>
+            <div className="text-center py-4">загрузка пользователей...</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Пользователь</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Роль</TableHead>
+                  <TableHead>пользователь</TableHead>
+                  <TableHead>почта</TableHead>
+                  <TableHead>роль</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center py-4">
-                      Нет пользователей
+                      нет пользователей
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -463,7 +463,7 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        {user.role === 'admin' ? 'Администратор' : 'Саб-лейбл'}
+                        {user.role === 'admin' ? 'администратор' : 'саб-лейбл'}
                       </TableCell>
                     </TableRow>
                   ))

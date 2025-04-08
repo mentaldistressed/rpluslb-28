@@ -15,26 +15,26 @@ export default function Sidebar() {
   
   const navItems = [
     {
-      name: "Тикеты",
+      name: "тикеты",
       href: "/tickets",
       icon: Ticket,
       active: location.pathname.startsWith('/tickets')
     },
     {
-      name: "Сообщения",
+      name: "сообщения",
       href: "/messages",
       icon: MessageSquare,
       active: location.pathname.startsWith('/messages')
     },
     ...(isAdmin ? [
       {
-        name: "Пользователи",
+        name: "пользователи",
         href: "/users",
         icon: Users,
         active: location.pathname.startsWith('/users')
       },
       {
-        name: "Настройки",
+        name: "настройки",
         href: "/settings",
         icon: Settings,
         active: location.pathname.startsWith('/settings')
@@ -49,7 +49,7 @@ export default function Sidebar() {
           <Link to="/tickets/new">
             <Button className="w-full justify-start" variant="default">
               <Plus className="mr-2 h-4 w-4" />
-              <span>Новый тикет</span>
+              <span>новый тикет</span>
             </Button>
           </Link>
         )}

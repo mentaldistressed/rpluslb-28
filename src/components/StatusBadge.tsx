@@ -38,11 +38,11 @@ export function PriorityBadge({ priority, className }: PriorityBadgeProps) {
   const getPriorityConfig = (priority: TicketPriority) => {
     switch (priority) {
       case "low":
-        return { label: "Низкий", className: "bg-slate-100 text-slate-800 hover:bg-slate-100" };
+        return { label: "низкий", className: "bg-slate-100 text-slate-800 hover:bg-slate-100" };
       case "medium":
-        return { label: "Средний", className: "bg-amber-100 text-amber-800 hover:bg-amber-100" };
+        return { label: "средний", className: "bg-amber-100 text-amber-800 hover:bg-amber-100" };
       case "high":
-        return { label: "Высокий", className: "bg-red-100 text-red-800 hover:bg-red-100" };
+        return { label: "высокий", className: "bg-red-100 text-red-800 hover:bg-red-100" };
     }
   };
 

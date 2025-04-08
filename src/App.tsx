@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">Загрузка...</div>;
+    return <div className="flex h-screen items-center justify-center">загрузка...</div>;
   }
   
   if (!user) {
@@ -36,7 +36,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">Загрузка...</div>;
+    return <div className="flex h-screen items-center justify-center">загрузка...</div>;
   }
   
   if (!user || user.role !== 'admin') {
@@ -101,8 +101,8 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">Страница сообщений</h1>
-                      <p>Эта страница находится в разработке.</p>
+                      <h1 className="text-2xl font-bold mb-4">страница сообщений</h1>
+                      <p>эта страница находится в разработке.</p>
                     </div>
                   </ProtectedRoute>
                 } 
@@ -113,8 +113,8 @@ const App = () => (
                 element={
                   <AdminRoute>
                     <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">Настройки</h1>
-                      <p>Эта страница находится в разработке.</p>
+                      <h1 className="text-2xl font-bold mb-4">настройки</h1>
+                      <p>эта страница находится в разработке.</p>
                     </div>
                   </AdminRoute>
                 } 

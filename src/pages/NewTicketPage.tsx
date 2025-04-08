@@ -47,62 +47,62 @@ export default function NewTicketPage() {
           onClick={() => navigate("/tickets")}
         >
           <ArrowLeft className="h-4 w-4" />
-          Назад к тикетам
+          назад к тикетам
         </Button>
       </div>
       
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Создание нового тикета</CardTitle>
+          <CardTitle>создание нового тикета</CardTitle>
           <CardDescription>
-            Заполните информацию для создания нового тикета
+            заполните информацию для создания нового тикета
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Заголовок</Label>
+              <Label htmlFor="title">заголовок</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Краткое описание проблемы"
+                placeholder="краткое описание проблемы"
                 required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="description">Описание</Label>
+              <Label htmlFor="description">описание</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Подробное описание проблемы или запроса"
+                placeholder="подробное описание проблемы или запроса"
                 rows={5}
                 required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="priority">Приоритет</Label>
+              <Label htmlFor="priority">приоритет</Label>
               <Select
                 value={priority}
                 onValueChange={(value) => setPriority(value as TicketPriority)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Выберите приоритет" />
+                  <SelectValue placeholder="выберите приоритет" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Низкий</SelectItem>
-                  <SelectItem value="medium">Средний</SelectItem>
-                  <SelectItem value="high">Высокий</SelectItem>
+                  <SelectItem value="low">низкий</SelectItem>
+                  <SelectItem value="medium">средний</SelectItem>
+                  <SelectItem value="high">высокий</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Создание..." : "Создать тикет"}
+              {isLoading ? "создание..." : "создать тикет"}
             </Button>
           </CardFooter>
         </form>

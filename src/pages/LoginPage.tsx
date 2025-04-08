@@ -149,34 +149,34 @@ export default function LoginPage() {
       <div className="w-full max-w-md px-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">
-            <span className="font-extrabold">r</span>
-            <span className="font-light">plus</span>
+            {/* <span className="font-extrabold">r</span> */}
+            <span className="font-light">rplus</span>
           </h1>
-          <p className="text-muted-foreground">Вход в панель управления</p>
+          <p className="text-muted-foreground">личный кабинет правообладателя</p>
         </div>
         
         <Card>
           <CardHeader>
-            <CardTitle>Вход в систему</CardTitle>
+            <CardTitle>вход в систему</CardTitle>
             <CardDescription>
-              Введите данные для входа в личный кабинет
+              введите данные для входа в личный кабинет
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">почта</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="example@domain.com"
+                  placeholder="mail@label.ru"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Пароль</Label>
+                <Label htmlFor="password">пароль</Label>
                 <Input
                   id="password"
                   type="password"
@@ -197,9 +197,9 @@ export default function LoginPage() {
         <div className="mt-6 text-center">
                     <Dialog>
             <DialogTrigger asChild>
-              {/* <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
+              <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
                 Создать аккаунт администратора
-              </Button> */}
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -319,7 +319,7 @@ export default function LoginPage() {
           </Dialog>
           
           <p className="text-sm text-muted-foreground mt-2">
-            Если у Вас нет аккаунта — обратитесь к @amirknyazev
+            если у Вас нет аккаунта — обратитесь к @amirknyazev
           </p>
         </div>
       </div>
