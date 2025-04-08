@@ -23,52 +23,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        if (session?.user) {
+      (event, currentSession) => {
+        setSession(currentSession);
+        
+        if (currentSession?.user) {
           // Don't make Supabase calls inside the callback to prevent deadlocks
           setTimeout(async () => {
             // Get the user profile from the profiles table
             const { data: profile, error } = await supabase
               .from('profiles')
               .select('*')
-              .eq('id', session.user.id)
+              .eq('id', currentSession.user.id)
               .single();
 
             if (profile) {
               setUser({
-                id: session.user.id,
+                id: currentSession.user.id,
                 email: profile.email,
                 name: profile.name,
                 role: profile.role as "admin" | "sublabel",
                 avatar: profile.avatar
               });
-            }
-            
-            if (error) {
+              setIsLoading(false);
+            } else if (error) {
               console.error("Error fetching profile:", error);
+              setIsLoading(false);
             }
           }, 0);
         } else {
           setUser(null);
+          setIsLoading(false);
         }
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      setSession(existingSession);
       
-      if (session?.user) {
+      if (existingSession?.user) {
         supabase
           .from('profiles')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', existingSession.user.id)
           .single()
           .then(({ data: profile, error }) => {
             if (profile) {
               setUser({
-                id: session.user.id,
+                id: existingSession.user.id,
                 email: profile.email,
                 name: profile.name,
                 role: profile.role as "admin" | "sublabel",
@@ -96,15 +98,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
       if (error) {
+        console.error("Login error:", error);
         toast({
           title: "Ошибка входа",
-          description: error.message,
+          description: error.message === "Invalid login credentials" 
+            ? "Неверный email или пароль" 
+            : error.message,
           variant: "destructive",
         });
         setIsLoading(false);
@@ -117,10 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Unexpected login error:", error);
       toast({
         title: "Ошибка входа",
-        description: "Произошла ошибка при входе",
+        description: "Произошла непредвиденная ошибка при входе",
         variant: "destructive",
       });
       setIsLoading(false);

@@ -6,18 +6,89 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("");
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (await login(email, password)) {
-      navigate("/tickets");
+    try {
+      const success = await login(email, password);
+      if (success) {
+        navigate("/tickets");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Ошибка входа",
+        description: "Произошла неизвестная ошибка при входе",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (registerPassword !== registerPasswordConfirm) {
+      toast({
+        title: "Ошибка регистрации",
+        description: "Пароли не совпадают",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRegistering(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: registerEmail,
+        password: registerPassword,
+        options: {
+          data: {
+            name: name,
+            role: "admin",
+          },
+        },
+      });
+      
+      if (error) {
+        toast({
+          title: "Ошибка регистрации",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Регистрация успешна",
+          description: "Теперь вы можете войти в систему",
+        });
+        setEmail(registerEmail);
+        setPassword(registerPassword);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Ошибка регистрации",
+        description: "Произошла неизвестная ошибка при регистрации",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -63,7 +134,7 @@ export default function LoginPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col space-y-2">
               <Button className="w-full" type="submit" disabled={isLoading}>
                 {isLoading ? "Вход..." : "Войти"}
               </Button>
@@ -71,9 +142,72 @@ export default function LoginPage() {
           </form>
         </Card>
         
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>Регистрация пользователей отключена.</p>
-          <p>Если у Вас нет аккаунта — обратитесь к @amirknyazev</p>
+        <div className="mt-6 text-center">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
+                Создать аккаунт администратора
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Регистрация администратора</DialogTitle>
+                <DialogDescription>
+                  Создайте аккаунт администратора для управления системой
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleRegister} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Имя</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email</Label>
+                  <Input
+                    id="register-email"
+                    type="email"
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Пароль</Label>
+                  <Input
+                    id="register-password"
+                    type="password"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password-confirm">Подтверждение пароля</Label>
+                  <Input
+                    id="register-password-confirm"
+                    type="password"
+                    value={registerPasswordConfirm}
+                    onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
+                    required
+                  />
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={isRegistering}>
+                    {isRegistering ? "Регистрация..." : "Зарегистрироваться"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+          
+          <p className="text-sm text-muted-foreground mt-2">
+            Если у Вас нет аккаунта — обратитесь к @amirknyazev
+          </p>
         </div>
       </div>
     </div>
