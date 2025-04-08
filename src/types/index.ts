@@ -1,0 +1,33 @@
+
+export type UserRole = 'admin' | 'sublabel';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  avatar?: string;
+}
+
+export type TicketStatus = 'open' | 'in-progress' | 'closed';
+export type TicketPriority = 'low' | 'medium' | 'high';
+
+export interface Ticket {
+  id: string;
+  title: string;
+  description: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  assignedTo?: string;
+}
+
+export interface Message {
+  id: string;
+  ticketId: string;
+  content: string;
+  createdAt: string;
+  userId: string;
+}

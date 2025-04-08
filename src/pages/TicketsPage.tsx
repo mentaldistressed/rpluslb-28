@@ -1,0 +1,166 @@
+
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useTickets } from "@/contexts/TicketsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { StatusBadge, PriorityBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
+import { Plus, Search } from "lucide-react";
+import { Ticket } from "@/types";
+
+export default function TicketsPage() {
+  const { tickets, getUserById } = useTickets();
+  const { user } = useAuth();
+  const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  useEffect(() => {
+    if (!user) return;
+    
+    // Filter tickets based on user role
+    let userTickets = user.role === 'admin' 
+      ? [...tickets] // Admins see all tickets
+      : tickets.filter(ticket => ticket.createdBy === user.id); // Sublabels see only their tickets
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      userTickets = userTickets.filter(ticket => 
+        ticket.title.toLowerCase().includes(query) || 
+        ticket.description.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter !== "all") {
+      userTickets = userTickets.filter(ticket => ticket.status === statusFilter);
+    }
+    
+    // Sort by latest updated first
+    userTickets.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    
+    setFilteredTickets(userTickets);
+  }, [tickets, user, searchQuery, statusFilter]);
+
+  if (!user) return null;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Тикеты</h1>
+        {user.role === 'sublabel' && (
+          <Link to="/tickets/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Новый тикет
+            </Button>
+          </Link>
+        )}
+      </div>
+      
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Поиск тикетов..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        <Select
+          value={statusFilter}
+          onValueChange={setStatusFilter}
+        >
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Все статусы" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все статусы</SelectItem>
+            <SelectItem value="open">Открытые</SelectItem>
+            <SelectItem value="in-progress">В работе</SelectItem>
+            <SelectItem value="closed">Закрытые</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      {filteredTickets.length > 0 ? (
+        <div className="border rounded-md">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Тикет</TableHead>
+                <TableHead>Статус</TableHead>
+                <TableHead>Приоритет</TableHead>
+                <TableHead>Последнее обновление</TableHead>
+                {user.role === 'admin' && <TableHead>Отправитель</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTickets.map((ticket) => {
+                const creator = getUserById(ticket.createdBy);
+                
+                return (
+                  <TableRow key={ticket.id} className="hover:bg-muted/40">
+                    <TableCell>
+                      <Link to={`/tickets/${ticket.id}`} className="hover:underline font-medium">
+                        {ticket.title}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={ticket.status} />
+                    </TableCell>
+                    <TableCell>
+                      <PriorityBadge priority={ticket.priority} />
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {format(new Date(ticket.updatedAt), "dd.MM.yyyy HH:mm")}
+                    </TableCell>
+                    {user.role === 'admin' && (
+                      <TableCell>
+                        {creator?.name}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center border rounded-lg p-8 bg-muted/20">
+          <h3 className="text-lg font-medium">Тикетов не найдено</h3>
+          <p className="text-muted-foreground mt-1">Нет тикетов, соответствующих заданным критериям.</p>
+          
+          {user.role === 'sublabel' && (
+            <Link to="/tickets/new" className="mt-4">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Создать новый тикет
+              </Button>
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
