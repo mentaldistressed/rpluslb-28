@@ -1,6 +1,5 @@
 
-import { useState } from "react";
-import { users as mockUsers } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,15 +33,54 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { UserRole } from "@/types";
 import { Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@/types";
 
 export default function UsersPage() {
   const { user } = useAuth();
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserRole, setNewUserRole] = useState<UserRole>("sublabel");
   const { toast } = useToast();
+  
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*');
+        
+        if (error) {
+          console.error("Error fetching users:", error);
+          return;
+        }
+        
+        if (data) {
+          const formattedUsers = data.map(profile => ({
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+            role: profile.role as UserRole,
+            avatar: profile.avatar
+          }));
+          
+          setUsers(formattedUsers);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (user && user.role === 'admin') {
+      fetchUsers();
+    }
+  }, [user]);
   
   if (!user || user.role !== 'admin') {
     return (
@@ -53,9 +91,9 @@ export default function UsersPage() {
     );
   }
 
-  const handleCreateUser = () => {
+  const handleCreateUser = async () => {
     // Simple validation
-    if (!newUserName.trim() || !newUserEmail.trim()) {
+    if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()) {
       toast({
         title: "Ошибка",
         description: "Пожалуйста, заполните все поля",
@@ -64,37 +102,61 @@ export default function UsersPage() {
       return;
     }
     
-    // Check if email already exists
-    if (users.some(u => u.email.toLowerCase() === newUserEmail.toLowerCase())) {
+    try {
+      // Create the user in Supabase Auth
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: newUserEmail,
+        password: newUserPassword,
+        email_confirm: true,
+        user_metadata: {
+          name: newUserName,
+          role: newUserRole
+        }
+      });
+      
+      if (error) {
+        console.error("Error creating user:", error);
+        toast({
+          title: "Ошибка",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (data.user) {
+        // The profile should be created automatically by the trigger
+        toast({
+          title: "Пользователь создан",
+          description: `Пользователь ${newUserName} успешно создан`,
+        });
+        
+        // Add the new user to the state
+        const newUser = {
+          id: data.user.id,
+          name: newUserName,
+          email: newUserEmail,
+          role: newUserRole,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${newUserName}&backgroundColor=000000&textColor=ffffff`
+        };
+        
+        setUsers([...users, newUser]);
+        
+        // Reset form and close dialog
+        setNewUserName("");
+        setNewUserEmail("");
+        setNewUserPassword("");
+        setNewUserRole("sublabel");
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
       toast({
         title: "Ошибка",
-        description: "Пользователь с таким email уже существует",
+        description: "Не удалось создать пользователя",
         variant: "destructive",
       });
-      return;
     }
-    
-    // Create new user
-    const newUser = {
-      id: `user-${Date.now()}`,
-      name: newUserName,
-      email: newUserEmail,
-      role: newUserRole,
-      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${newUserName}&backgroundColor=000000&textColor=ffffff`
-    };
-    
-    setUsers([...users, newUser]);
-    
-    toast({
-      title: "Пользователь создан",
-      description: `Пользователь ${newUserName} успешно создан`,
-    });
-    
-    // Reset form and close dialog
-    setNewUserName("");
-    setNewUserEmail("");
-    setNewUserRole("sublabel");
-    setIsDialogOpen(false);
   };
 
   return (
@@ -140,6 +202,17 @@ export default function UsersPage() {
               </div>
               
               <div className="space-y-2">
+                <Label htmlFor="password">Пароль</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={newUserPassword}
+                  onChange={(e) => setNewUserPassword(e.target.value)}
+                  placeholder="Пароль"
+                />
+              </div>
+              
+              <div className="space-y-2">
                 <Label htmlFor="role">Роль</Label>
                 <Select
                   value={newUserRole}
@@ -168,31 +241,43 @@ export default function UsersPage() {
           <CardTitle>Список пользователей</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Пользователь</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Роль</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <UserAvatar user={user} size="sm" />
-                      <div className="font-medium">{user.name}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    {user.role === 'admin' ? 'Администратор' : 'Саб-лейбл'}
-                  </TableCell>
+          {isLoading ? (
+            <div className="text-center py-4">Загрузка пользователей...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Пользователь</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Роль</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {users.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-4">
+                      Нет пользователей
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  users.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <UserAvatar user={user} size="sm" />
+                          <div className="font-medium">{user.name}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        {user.role === 'admin' ? 'Администратор' : 'Саб-лейбл'}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
