@@ -22,8 +22,8 @@ export default function Header() {
       <div className="h-16 flex items-center justify-between px-6">
         <div className="flex items-center space-x-2">
           <div className="text-xl font-medium">
-            <span className="font-extrabold">r</span>
-            <span className="font-light">plus</span>
+            {/* <span className="font-extrabold">r</span> */}
+            <span className="font-light">rplus</span>
           </div>
         </div>
         
