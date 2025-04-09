@@ -35,6 +35,8 @@ import { Copy, Plus, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@/types";
+import { z } from "zod";
+import { formSchema } from "@/schemas/formSchema";
 
 export default function UsersPage() {
   const { user } = useAuth();
@@ -53,6 +55,7 @@ export default function UsersPage() {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -169,68 +172,44 @@ export default function UsersPage() {
     }
   };
 
-  const handleCreateUser = async () => {
-    if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()) {
-      toast({
-        title: "Ошибка",
-        description: "Пожалуйста, заполните все поля",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleCreateUser = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: newUserEmail,
-        password: newUserPassword,
-        options: {
-          data: {
-            name: newUserName,
-            role: newUserRole,
-          },
-        },
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: values.email,
+        password: values.password,
+        email_confirm: true,
+        user_metadata: {
+          name: values.name,
+          role: 'sublabel'
+        }
       });
       
       if (error) {
         console.error("Error creating user:", error);
         toast({
-          title: "ошибка",
-          description: error.message,
+          title: "Ошибка",
+          description: error.message || "Не удалось создать пользователя",
           variant: "destructive",
         });
-        return;
-      }
-      
-      if (data.user) {
+      } else {
         toast({
-          title: "пользователь создан",
-          description: `пользователь ${newUserName} успешно создан`,
+          title: "Пользователь создан",
+          description: "Новый сублейбл успешно добавлен",
         });
-        
-        const newUser = {
-          id: data.user.id,
-          name: newUserName,
-          email: newUserEmail,
-          role: newUserRole,
-          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${newUserName}&backgroundColor=000000&textColor=ffffff`
-        };
-        
-        setUsers([...users, newUser]);
-        
-        setNewUserName("");
-        setNewUserEmail("");
-        setNewUserPassword("");
-        setNewUserRole("sublabel");
-        setUseGeneratedPassword(false);
-        setIsDialogOpen(false);
+        form.reset();
+        fetchUsers();
       }
-    } catch (error) {
-      console.error("Error creating user:", error);
+    } catch (err) {
+      console.error("Error creating user:", err);
       toast({
-        title: "ошибка",
-        description: "не удалось создать пользователя",
+        title: "Ошибка",
+        description: "Не удалось создать пользователя",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
