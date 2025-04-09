@@ -347,7 +347,7 @@ export default function UsersPage() {
               <div className="mt-4">
                 <Button
                   type="button"
-                  onClick={() => copyToClipboard(`Вход в учётную запись partners.rpluslb.ru\n\nEmail: ${newUserEmail}\nПароль: ${newUserPassword}`)}
+                  onClick={() => copyToClipboard(`Данные для входа в учётную запись p.rpluslb.ru\n\nEmail: ${newUserEmail}\nПароль: ${newUserPassword}`)}
                   variant="outline"
                   className="w-full"
                 >
