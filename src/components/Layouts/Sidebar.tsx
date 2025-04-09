@@ -21,6 +21,14 @@ export default function Sidebar() {
       icon: Ticket,
       active: location.pathname.startsWith('/tickets')
     },
+    ...(isAdmin ? [
+      {
+        name: "пользователи",
+        href: "/users",
+        icon: Users,
+        active: location.pathname.startsWith('/users')
+      }
+    ] : []),
     {
       name: "настройки",
       href: "/settings",
@@ -33,14 +41,6 @@ export default function Sidebar() {
     //   icon: MessageSquare,
     //   active: location.pathname.startsWith('/messages')
     // },
-    ...(isAdmin ? [
-      {
-        name: "пользователи",
-        href: "/users",
-        icon: Users,
-        active: location.pathname.startsWith('/users')
-      }
-    ] : [])
   ];
 
   return (
