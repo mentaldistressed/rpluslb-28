@@ -14,7 +14,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       case "open":
         return { label: "открыт", className: "bg-blue-100 text-blue-800 hover:bg-blue-100" };
       case "in-progress":
-        return { label: "в работе", className: "bg-amber-100 text-amber-800 hover:bg-amber-100" };
+        return { label: "в обработке", className: "bg-amber-100 text-amber-800 hover:bg-amber-100" };
       case "closed":
         return { label: "закрыт", className: "bg-green-100 text-green-800 hover:bg-green-100" };
     }

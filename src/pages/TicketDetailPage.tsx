@@ -121,7 +121,7 @@ export default function TicketDetailPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="open">открыт</SelectItem>
-                  <SelectItem value="in-progress">в работе</SelectItem>
+                  <SelectItem value="in-progress">в обработке</SelectItem>
                   <SelectItem value="closed">закрыт</SelectItem>
                 </SelectContent>
               </Select>

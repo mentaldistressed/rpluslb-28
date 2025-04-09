@@ -97,7 +97,7 @@ export default function TicketsPage() {
           <SelectContent>
             <SelectItem value="all">все статусы</SelectItem>
             <SelectItem value="open">открытые</SelectItem>
-            <SelectItem value="in-progress">в работе</SelectItem>
+            <SelectItem value="in-progress">в обработке</SelectItem>
             <SelectItem value="closed">закрытые</SelectItem>
           </SelectContent>
         </Select>

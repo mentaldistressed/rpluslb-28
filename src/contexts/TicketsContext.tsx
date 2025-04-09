@@ -216,7 +216,7 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         title: "статус обновлен",
         description: `статус тикета изменен на "${
           status === 'open' ? 'открыт' : 
-          status === 'in-progress' ? 'в работе' : 'закрыт'
+          status === 'in-progress' ? 'в обработке' : 'закрыт'
         }"`,
       });
       
