@@ -213,10 +213,10 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
       }
       
       toast({
-        title: "Статус обновлен",
-        description: `Статус тикета изменен на "${
-          status === 'open' ? 'Открыт' : 
-          status === 'in-progress' ? 'В работе' : 'Закрыт'
+        title: "статус обновлен",
+        description: `статус тикета изменен на "${
+          status === 'open' ? 'открыт' : 
+          status === 'in-progress' ? 'в работе' : 'закрыт'
         }"`,
       });
       
