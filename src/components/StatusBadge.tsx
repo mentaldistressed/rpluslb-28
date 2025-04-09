@@ -12,11 +12,11 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   const getStatusConfig = (status: TicketStatus) => {
     switch (status) {
       case "open":
-        return { label: "открыт", className: "bg-blue-100 text-blue-800 hover:bg-blue-100" };
+        return { label: "открыт", className: "bg-green-100 text-green-800 hover:bg-green-200" };
       case "in-progress":
-        return { label: "в обработке", className: "bg-amber-100 text-amber-800 hover:bg-amber-100" };
+        return { label: "в обработке", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" };
       case "closed":
-        return { label: "закрыт", className: "bg-green-100 text-green-800 hover:bg-green-100" };
+        return { label: "закрыт", className: "bg-gray-200 text-gray-800 hover:bg-gray-300" };
     }
   };
 
