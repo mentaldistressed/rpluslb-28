@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
+        console.log("Auth state changed:", event);
         setSession(currentSession);
         
         if (currentSession?.user) {
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      console.log("Existing session:", existingSession);
       setSession(existingSession);
       
       if (existingSession?.user) {
@@ -98,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     
     try {
+      console.log("Attempting login for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password

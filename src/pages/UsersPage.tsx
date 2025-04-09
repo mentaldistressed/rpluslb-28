@@ -180,11 +180,15 @@ export default function UsersPage() {
     }
     
     try {
-      const { data, error } = await supabase.rpc('create_user_as_admin', {
+      const { data, error } = await supabase.auth.signUp({
         email: newUserEmail,
         password: newUserPassword,
-        name: newUserName,
-        role: newUserRole
+        options: {
+          data: {
+            name: newUserName,
+            role: newUserRole,
+          },
+        },
       });
       
       if (error) {
@@ -197,29 +201,21 @@ export default function UsersPage() {
         return;
       }
       
-      if (data) {
+      if (data.user) {
         toast({
           title: "пользователь создан",
           description: `пользователь ${newUserName} успешно создан`,
         });
         
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data)
-          .single();
-          
-        if (profileData) {
-          const newUser = {
-            id: data,
-            name: newUserName,
-            email: newUserEmail,
-            role: newUserRole,
-            avatar: profileData.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${newUserName}&backgroundColor=000000&textColor=ffffff`
-          };
-          
-          setUsers([...users, newUser]);
-        }
+        const newUser = {
+          id: data.user.id,
+          name: newUserName,
+          email: newUserEmail,
+          role: newUserRole,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${newUserName}&backgroundColor=000000&textColor=ffffff`
+        };
+        
+        setUsers([...users, newUser]);
         
         setNewUserName("");
         setNewUserEmail("");
@@ -336,7 +332,7 @@ export default function UsersPage() {
                 <Label htmlFor="role">роль</Label>
                 <Select
                   value={newUserRole}
-                  onValueChange={(value: UserRole) => setNewUserRole(value)}
+                  onValueChange={(value) => setNewUserRole(value as UserRole)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите роль" />
