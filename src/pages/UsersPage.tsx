@@ -367,67 +367,6 @@ export default function UsersPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
-                создать аккаунт саб-лейбла
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>регистрация саб-лейбла</DialogTitle>
-                <DialogDescription>
-                  создайте аккаунт саб-лейбла
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleRegisterS} className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">имя</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">почта</Label>
-                  <Input
-                    id="register-email"
-                    type="email"
-                    value={registerEmail}
-                    onChange={(e) => setRegisterEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">пароль</Label>
-                  <Input
-                    id="register-password"
-                    type="password"
-                    value={registerPassword}
-                    onChange={(e) => setRegisterPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-password-confirm">подтверждение пароля</Label>
-                  <Input
-                    id="register-password-confirm"
-                    type="password"
-                    value={registerPasswordConfirm}
-                    onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
-                    required
-                  />
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={isRegistering}>
-                    {isRegistering ? "регистрация..." : "зарегистрироваться"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
       <Card>
         <CardHeader>
           <CardTitle>список пользователей</CardTitle>
