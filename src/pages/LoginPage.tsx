@@ -319,7 +319,7 @@ export default function LoginPage() {
           </Dialog>
           
           <p className="text-sm text-muted-foreground mt-2">
-            для получения доступа к ЛКПО обратитесь к @amirknyazev
+            данные для авторизации в системе можно получить у @amirknyazev
           </p>
           <p className="text-sm text-muted-foreground mt-2">
           © {new Date().getFullYear()} rplus
