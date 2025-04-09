@@ -109,9 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         console.error("Login error:", error);
         toast({
-          title: "Ошибка входа",
+          title: "ошибка входа",
           description: error.message === "Invalid login credentials" 
-            ? "Неверный email или пароль" 
+            ? "неверный email или пароль" 
             : error.message,
           variant: "destructive",
         });
@@ -120,16 +120,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       toast({
-        title: "Успешный вход",
-        description: "Вы успешно вошли в систему",
+        title: "авторизация успешна",
+        description: "вы успешно вошли в систему",
       });
       
       return true;
     } catch (error: any) {
       console.error("Unexpected login error:", error);
       toast({
-        title: "Ошибка входа",
-        description: "Произошла непредвиденная ошибка при входе",
+        title: "ошибка входа",
+        description: "произошла непредвиденная ошибка при входе",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     toast({
-      title: "Выход выполнен",
+      title: "выход выполнен",
       description: "Вы успешно вышли из системы",
     });
   };

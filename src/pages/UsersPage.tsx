@@ -172,44 +172,70 @@ export default function UsersPage() {
     }
   };
 
-  const handleCreateUser = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
+  const handleCreateUser = async () => {
+    if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, заполните все поля",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: values.email,
-        password: values.password,
-        email_confirm: true,
-        user_metadata: {
-          name: values.name,
-          role: 'sublabel'
-        }
+      // Используем функцию auth.admin.createUser вместо RPC
+      const { data, error } = await supabase.auth.signUp({
+        email: newUserEmail,
+        password: newUserPassword,
+        options: {
+          data: {
+            name: newUserName,
+            role: newUserRole,
+          },
+        },
       });
       
       if (error) {
         console.error("Error creating user:", error);
         toast({
-          title: "Ошибка",
-          description: error.message || "Не удалось создать пользователя",
+          title: "ошибка",
+          description: error.message,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Пользователь создан",
-          description: "Новый сублейбл успешно добавлен",
-        });
-        form.reset();
-        fetchUsers();
+        return;
       }
-    } catch (err) {
-      console.error("Error creating user:", err);
+      
+      if (data.user) {
+        toast({
+          title: "пользователь создан",
+          description: `пользователь ${newUserName} успешно создан`,
+        });
+        
+        // Обновляем список пользователей
+        const newUser = {
+          id: data.user.id,
+          name: newUserName,
+          email: newUserEmail,
+          role: newUserRole,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${newUserName}&backgroundColor=000000&textColor=ffffff`
+        };
+        
+        setUsers([...users, newUser]);
+        
+        setNewUserName("");
+        setNewUserEmail("");
+        setNewUserPassword("");
+        setNewUserRole("sublabel");
+        setUseGeneratedPassword(false);
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось создать пользователя",
+        title: "ошибка",
+        description: "не удалось создать пользователя",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

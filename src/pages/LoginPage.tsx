@@ -157,7 +157,7 @@ export default function LoginPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>вход в систему</CardTitle>
+            <CardTitle>авторизация в системе</CardTitle>
             <CardDescription>
               введите данные для входа в личный кабинет
             </CardDescription>
@@ -188,7 +188,7 @@ export default function LoginPage() {
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
               <Button className="w-full" type="submit" disabled={isLoading}>
-                {isLoading ? "Вход..." : "Войти"}
+                {isLoading ? "авторизация..." : "авторизоваться"}
               </Button>
             </CardFooter>
           </form>
