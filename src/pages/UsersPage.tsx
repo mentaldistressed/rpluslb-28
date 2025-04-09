@@ -336,7 +336,7 @@ export default function UsersPage() {
                 <Label htmlFor="role">роль</Label>
                 <Select
                   value={newUserRole}
-                  onValueChange={(value) => setNewUserRole(value as UserRole)}
+                  onValueChange={(value: UserRole) => setNewUserRole(value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите роль" />
