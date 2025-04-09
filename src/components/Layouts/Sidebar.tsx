@@ -12,6 +12,7 @@ export default function Sidebar() {
   if (!user) return null;
 
   const isAdmin = user.role === 'admin';
+  const isUser = user.role === 'sublabel';
   
   const navItems = [
     {
@@ -21,23 +22,23 @@ export default function Sidebar() {
       active: location.pathname.startsWith('/tickets')
     },
     {
-      name: "сообщения",
-      href: "/messages",
-      icon: MessageSquare,
-      active: location.pathname.startsWith('/messages')
+      name: "настройки",
+      href: "/settings",
+      icon: Settings,
+      active: location.pathname.startsWith('/settings')
     },
+    // {
+    //   name: "сообщения",
+    //   href: "/messages",
+    //   icon: MessageSquare,
+    //   active: location.pathname.startsWith('/messages')
+    // },
     ...(isAdmin ? [
       {
         name: "пользователи",
         href: "/users",
         icon: Users,
         active: location.pathname.startsWith('/users')
-      },
-      {
-        name: "настройки",
-        href: "/settings",
-        icon: Settings,
-        active: location.pathname.startsWith('/settings')
       }
     ] : [])
   ];
@@ -45,11 +46,11 @@ export default function Sidebar() {
   return (
     <div className="w-64 bg-white border-r min-h-[calc(100vh-4rem)] flex flex-col p-4">
       <div className="flex-1 space-y-2">
-        {isAdmin && (
+        {isUser && (
           <Link to="/tickets/new">
             <Button className="w-full justify-start" variant="default">
               <Plus className="mr-2 h-4 w-4" />
-              <span>новый тикет</span>
+              <span>создать новый тикет</span>
             </Button>
           </Link>
         )}

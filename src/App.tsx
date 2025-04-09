@@ -102,7 +102,7 @@ const App = () => (
                   <ProtectedRoute>
                     <div className="p-8 text-center">
                       <h1 className="text-2xl font-bold mb-4">страница сообщений</h1>
-                      <p>эта страница находится в разработке.</p>
+                      <p>эта страница находится в разработке</p>
                     </div>
                   </ProtectedRoute>
                 } 
@@ -111,12 +111,12 @@ const App = () => (
               <Route 
                 path="/settings" 
                 element={
-                  <AdminRoute>
+                  <ProtectedRoute>
                     <div className="p-8 text-center">
                       <h1 className="text-2xl font-bold mb-4">настройки</h1>
-                      <p>эта страница находится в разработке.</p>
+                      <p>эта страница находится в разработке</p>
                     </div>
-                  </AdminRoute>
+                  </ProtectedRoute>
                 } 
               />
               
