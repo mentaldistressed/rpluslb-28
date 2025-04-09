@@ -319,7 +319,10 @@ export default function LoginPage() {
           </Dialog>
           
           <p className="text-sm text-muted-foreground mt-2">
-            если у Вас нет аккаунта — обратитесь к @amirknyazev
+            для получения доступа к ЛКПО обратитесь к @amirknyazev
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+          © {new Date().getFullYear()} rplus
           </p>
         </div>
       </div>
