@@ -8,7 +8,6 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -17,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { ArrowLeft, Send, PaperPlaneIcon, ArrowUpIcon, RefreshCw, Clock } from "lucide-react";
+import { ArrowLeft, Send, RefreshCw, Clock, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 import { TicketStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,10 +40,22 @@ export default function TicketDetailPage() {
   const [newMessage, setNewMessage] = useState("");
   const [currentStatus, setCurrentStatus] = useState<TicketStatus>();
   const [isSending, setIsSending] = useState(false);
+  const [showKeyboardHint, setShowKeyboardHint] = useState(true);
   
   // Get ticket and messages
   const ticket = ticketId ? getTicketById(ticketId) : undefined;
   const messages = ticketId ? getTicketMessages(ticketId) : [];
+  
+  // Extract key information from the first message for the description
+  const firstMessage = messages.length > 0 ? messages[0] : null;
+  const ticketSummary = firstMessage ? extractSummary(firstMessage.content) : '';
+  
+  // Function to extract a summary from the message content
+  function extractSummary(content: string) {
+    // Get first paragraph or first 150 characters, whichever is shorter
+    const firstParagraph = content.split('\n')[0];
+    return firstParagraph.length > 150 ? firstParagraph.substring(0, 147) + '...' : firstParagraph;
+  }
   
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -149,6 +160,11 @@ export default function TicketDetailPage() {
   };
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Hide keyboard hint when user starts typing
+    if (showKeyboardHint && newMessage.length > 0) {
+      setShowKeyboardHint(false);
+    }
+    
     // Send message on Enter (without Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -171,6 +187,7 @@ export default function TicketDetailPage() {
       </div>
       
       <div className="space-y-6">
+        {/* Header with ticket title and top-level details */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 bg-card border rounded-lg p-4 shadow-sm">
           <div>
             <h1 className="text-2xl font-bold">{ticket.title}</h1>
@@ -211,19 +228,42 @@ export default function TicketDetailPage() {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Ticket details and messages */}
           <div className="flex-1 order-2 md:order-1">
+            {/* Ticket summary card */}
             <Card className="mb-6">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">описание</CardTitle>
+                {firstMessage && (
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(firstMessage.createdAt), "dd.MM.yyyy")}
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-line">{ticket.description}</p>
+                <p className="whitespace-pre-line">{ticketSummary || ticket.description}</p>
+                {firstMessage && firstMessage.content.length > ticketSummary.length && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="mt-2 text-xs text-muted-foreground hover:text-primary"
+                    onClick={() => scrollToBottom()}
+                  >
+                    <ChevronDown className="h-3 w-3 mr-1" />
+                    показать полное сообщение
+                  </Button>
+                )}
               </CardContent>
             </Card>
             
             {/* Messages */}
             <div className="border rounded-lg bg-card shadow-sm overflow-hidden">
-              <div className="p-4 border-b bg-muted/30">
+              <div className="p-4 border-b bg-muted/30 flex items-center">
+                <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground" />
                 <h3 className="font-medium">сообщения</h3>
+                {messages.length > 0 && (
+                  <span className="ml-2 text-xs bg-primary/10 text-primary py-0.5 px-1.5 rounded-full">
+                    {messages.length}
+                  </span>
+                )}
               </div>
               
               <div className="p-4 space-y-4 max-h-[500px] overflow-y-auto">
@@ -284,21 +324,40 @@ export default function TicketDetailPage() {
                 )}
               </div>
               
-              {/* Reply form */}
+              {/* Reply form with improved keyboard hint */}
               <div className="p-3 border-t">
                 <form onSubmit={handleSendMessage} className="relative">
                   <Textarea
                     ref={textareaRef}
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={(e) => {
+                      setNewMessage(e.target.value);
+                      if (e.target.value.length > 0) {
+                        setShowKeyboardHint(false);
+                      } else {
+                        setShowKeyboardHint(true);
+                      }
+                    }}
                     onKeyDown={handleKeyDown}
+                    onFocus={() => setShowKeyboardHint(true)}
+                    onBlur={() => setShowKeyboardHint(false)}
                     placeholder="введите Ваше сообщение..."
-                    className="mb-2 pr-10 resize-none"
+                    className="mb-2 resize-none min-h-[100px]"
                     rows={3}
                   />
-                  <div className="absolute right-3 bottom-4 text-xs text-muted-foreground">
-                    Shift+Enter для новой строки, Enter для отправки
-                  </div>
+                  
+                  {/* New keyboard hint styling */}
+                  {showKeyboardHint && (
+                    <div className="absolute bottom-[60px] right-0 bg-background border shadow-sm rounded-md py-1 px-2 text-xs text-muted-foreground flex items-center gap-1 mr-3">
+                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Shift</kbd>
+                      <span>+</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Enter</kbd>
+                      <span className="mx-1">для новой строки</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium ml-1">Enter</kbd>
+                      <span className="mx-1">для отправки</span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-end">
                     <Button 
                       type="submit" 
@@ -333,14 +392,14 @@ export default function TicketDetailPage() {
                 <div className="space-y-2 pb-3 border-b">
                   <div className="text-sm font-medium">статус</div>
                   <div>
-                    <StatusBadge status={ticket.status} size="lg" />
+                    <StatusBadge status={ticket.status} />
                   </div>
                 </div>
                 
                 <div className="space-y-2 pb-3 border-b">
                   <div className="text-sm font-medium">приоритет</div>
                   <div>
-                    <PriorityBadge priority={ticket.priority} size="lg" />
+                    <PriorityBadge priority={ticket.priority} />
                   </div>
                 </div>
                 
