@@ -197,9 +197,9 @@ export default function LoginPage() {
         <div className="mt-6 text-center">
                     <Dialog>
             <DialogTrigger asChild>
-              <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
+              {/* <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
                 Создать аккаунт администратора
-              </Button>
+              </Button> */}
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
