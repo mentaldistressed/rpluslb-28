@@ -112,7 +112,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_create_user: {
+        Args: { email: string; password: string }
+        Returns: undefined
+      }
+      create_user_as_admin: {
+        Args: { email: string; password: string; name: string; role: string }
+        Returns: string
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

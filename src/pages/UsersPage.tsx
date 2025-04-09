@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -93,6 +92,31 @@ export default function UsersPage() {
     }
   }, [user]);
   
+  const generateRandomPassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewUserPassword(password);
+    return password;
+  };
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "скопировано в буфер обмена",
+      description: "данные скопированы в буфер обмена",
+    });
+  };
+  
+  const handleTogglePasswordType = () => {
+    if (!useGeneratedPassword) {
+      generateRandomPassword();
+    }
+    setUseGeneratedPassword(!useGeneratedPassword);
+  };
+
   const handleRegisterS = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -144,43 +168,8 @@ export default function UsersPage() {
       setIsRegistering(false);
     }
   };
-  
-  const generateRandomPassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-    let password = "";
-    for (let i = 0; i < 10; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setNewUserPassword(password);
-    return password;
-  };
-  
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "скопировано в буфер обмена",
-      description: "данные скопированы в буфер обмена",
-    });
-  };
-  
-  const handleTogglePasswordType = () => {
-    if (!useGeneratedPassword) {
-      generateRandomPassword();
-    }
-    setUseGeneratedPassword(!useGeneratedPassword);
-  };
-
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold">доступ запрещен</h2>
-        <p className="text-muted-foreground mt-1">у Вас нет доступа к этой странице</p>
-      </div>
-    );
-  }
 
   const handleCreateUser = async () => {
-    // Simple validation
     if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()) {
       toast({
         title: "Ошибка",
@@ -191,15 +180,11 @@ export default function UsersPage() {
     }
     
     try {
-      // Create the user in Supabase Auth
-      const { data, error } = await supabase.auth.admin.createUser({
+      const { data, error } = await supabase.rpc('create_user_as_admin', {
         email: newUserEmail,
         password: newUserPassword,
-        email_confirm: true,
-        user_metadata: {
-          name: newUserName,
-          role: newUserRole
-        }
+        name: newUserName,
+        role: newUserRole
       });
       
       if (error) {
@@ -212,25 +197,30 @@ export default function UsersPage() {
         return;
       }
       
-      if (data.user) {
-        // The profile should be created automatically by the trigger
+      if (data) {
         toast({
           title: "пользователь создан",
           description: `пользователь ${newUserName} успешно создан`,
         });
         
-        // Add the new user to the state
-        const newUser = {
-          id: data.user.id,
-          name: newUserName,
-          email: newUserEmail,
-          role: newUserRole,
-          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${newUserName}&backgroundColor=000000&textColor=ffffff`
-        };
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data)
+          .single();
+          
+        if (profileData) {
+          const newUser = {
+            id: data,
+            name: newUserName,
+            email: newUserEmail,
+            role: newUserRole,
+            avatar: profileData.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${newUserName}&backgroundColor=000000&textColor=ffffff`
+          };
+          
+          setUsers([...users, newUser]);
+        }
         
-        setUsers([...users, newUser]);
-        
-        // Reset form and close dialog
         setNewUserName("");
         setNewUserEmail("");
         setNewUserPassword("");
@@ -247,6 +237,15 @@ export default function UsersPage() {
       });
     }
   };
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold">доступ запрещен</h2>
+        <p className="text-muted-foreground mt-1">у Вас нет доступа к этой странице</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
