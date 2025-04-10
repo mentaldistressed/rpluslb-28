@@ -19,6 +19,8 @@ import { format } from "date-fns";
 import { ArrowLeft, Send, RefreshCw, Clock, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 import { TicketStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { TicketClosedNotice } from "@/components/TicketClosedNotice";
+import { NewsBanner } from "@/components/NewsBanner";
 
 export default function TicketDetailPage() {
   const { ticketId } = useParams<{ ticketId: string }>();
@@ -71,10 +73,10 @@ export default function TicketDetailPage() {
   
   // Auto-focus textarea when page loads
   useEffect(() => {
-    if (textareaRef.current) {
+    if (textareaRef.current && ticket?.status !== 'closed') {
       textareaRef.current.focus();
     }
-  }, []);
+  }, [ticket]);
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -108,6 +110,8 @@ export default function TicketDetailPage() {
   const assignee = ticket.assignedTo ? getUserById(ticket.assignedTo) : undefined;
   const isAdmin = user.role === 'admin';
   const canChangeStatus = isAdmin;
+  const isTicketClosed = ticket.status === 'closed';
+  const isSublabel = user.role === 'sublabel';
   
   const getStatusLabel = (status: TicketStatus) => {
     switch(status) {
@@ -137,7 +141,7 @@ export default function TicketDetailPage() {
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    if (!newMessage.trim() || isSending) return;
+    if (!newMessage.trim() || isSending || isTicketClosed) return;
     
     setIsSending(true);
     
@@ -184,6 +188,11 @@ export default function TicketDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           назад к тикетам
         </Button>
+      </div>
+      
+      {/* News Banner */}
+      <div className="mb-6">
+        <NewsBanner />
       </div>
       
       <div className="space-y-6">
@@ -324,60 +333,64 @@ export default function TicketDetailPage() {
                 )}
               </div>
               
-              {/* Reply form with improved keyboard hint */}
+              {/* Reply form with improved keyboard hint OR closed notice */}
               <div className="p-3 border-t">
-                <form onSubmit={handleSendMessage} className="relative">
-                  <Textarea
-                    ref={textareaRef}
-                    value={newMessage}
-                    onChange={(e) => {
-                      setNewMessage(e.target.value);
-                      if (e.target.value.length > 0) {
-                        setShowKeyboardHint(false);
-                      } else {
-                        setShowKeyboardHint(true);
-                      }
-                    }}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => setShowKeyboardHint(true)}
-                    onBlur={() => setShowKeyboardHint(false)}
-                    placeholder="введите Ваше сообщение..."
-                    className="mb-2 resize-none min-h-[100px]"
-                    rows={3}
-                  />
-                  
-                  {/* New keyboard hint styling */}
-                  {showKeyboardHint && (
-                    <div className="absolute bottom-[60px] right-0 bg-background border shadow-sm rounded-md py-1 px-2 text-xs text-muted-foreground flex items-center gap-1 mr-3">
-                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Shift</kbd>
-                      <span>+</span>
-                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Enter</kbd>
-                      <span className="mx-1">для новой строки</span>
-                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium ml-1">Enter</kbd>
-                      <span className="mx-1">для отправки</span>
+                {isTicketClosed && isSublabel ? (
+                  <TicketClosedNotice />
+                ) : (
+                  <form onSubmit={handleSendMessage} className="relative">
+                    <Textarea
+                      ref={textareaRef}
+                      value={newMessage}
+                      onChange={(e) => {
+                        setNewMessage(e.target.value);
+                        if (e.target.value.length > 0) {
+                          setShowKeyboardHint(false);
+                        } else {
+                          setShowKeyboardHint(true);
+                        }
+                      }}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => setShowKeyboardHint(true)}
+                      onBlur={() => setShowKeyboardHint(false)}
+                      placeholder="введите Ваше сообщение..."
+                      className="mb-2 resize-none min-h-[100px]"
+                      rows={3}
+                    />
+                    
+                    {/* New keyboard hint styling */}
+                    {showKeyboardHint && (
+                      <div className="absolute bottom-[60px] right-0 bg-background border shadow-sm rounded-md py-1 px-2 text-xs text-muted-foreground flex items-center gap-1 mr-3">
+                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Shift</kbd>
+                        <span>+</span>
+                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Enter</kbd>
+                        <span className="mx-1">для новой строки</span>
+                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium ml-1">Enter</kbd>
+                        <span className="mx-1">для отправки</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-end">
+                      <Button 
+                        type="submit" 
+                        disabled={isLoading || isSending || !newMessage.trim()}
+                        className="gap-2"
+                      >
+                        {isLoading || isSending ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                            отправка...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4" />
+                            отправить
+                          </>
+                        )}
+                      </Button>
                     </div>
-                  )}
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      type="submit" 
-                      disabled={isLoading || isSending || !newMessage.trim()}
-                      className="gap-2"
-                    >
-                      {isLoading || isSending ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          отправка...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4" />
-                          отправить
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
+                  </form>
+                )}
               </div>
             </div>
           </div>

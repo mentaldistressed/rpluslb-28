@@ -1,9 +1,10 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Ticket, Users, Plus, MessageSquare, Settings } from "lucide-react";
+import { Ticket, Users, Plus, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { NewsBanner } from "@/components/NewsBanner";
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -35,17 +36,11 @@ export default function Sidebar() {
       icon: Settings,
       active: location.pathname.startsWith('/settings')
     },
-    // {
-    //   name: "сообщения",
-    //   href: "/messages",
-    //   icon: MessageSquare,
-    //   active: location.pathname.startsWith('/messages')
-    // },
   ];
 
   return (
     <div className="w-64 bg-white border-r min-h-[calc(100vh-4rem)] flex flex-col p-4">
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 space-y-4">
         {isUser && (
           <Link to="/tickets/new">
             <Button className="w-full justify-start" variant="default">
@@ -55,7 +50,12 @@ export default function Sidebar() {
           </Link>
         )}
         
-        <nav className="space-y-1 mt-6">
+        {/* Add the NewsBanner component to the sidebar */}
+        <div className="my-4">
+          <NewsBanner />
+        </div>
+        
+        <nav className="space-y-1 mt-2">
           {navItems.map((item) => (
             <Link
               key={item.href}

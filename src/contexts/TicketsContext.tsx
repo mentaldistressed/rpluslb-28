@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Ticket, Message, User } from "@/types";
 import { useAuth } from "./AuthContext";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TicketsContextType {
@@ -28,19 +28,27 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      setIsLoading(true);
+  // Function to fetch all data from the database
+  const fetchData = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Fetch users (profiles) in parallel
+      const profilesPromise = supabase.from('profiles').select('*');
+      const ticketsPromise = supabase.from('tickets').select('*').order('created_at', { ascending: false });
+      const messagesPromise = supabase.from('messages').select('*').order('created_at', { ascending: true });
       
-      // Fetch users (profiles)
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*');
-        
-      if (profilesError) {
-        console.error("Error fetching profiles:", profilesError);
-      } else if (profiles) {
-        const mappedUsers = profiles.map(profile => ({
+      const [profilesResponse, ticketsResponse, messagesResponse] = await Promise.all([
+        profilesPromise,
+        ticketsPromise,
+        messagesPromise
+      ]);
+      
+      // Handle profiles
+      if (profilesResponse.error) {
+        console.error("Error fetching profiles:", profilesResponse.error);
+      } else if (profilesResponse.data) {
+        const mappedUsers = profilesResponse.data.map(profile => ({
           id: profile.id,
           email: profile.email,
           name: profile.name,
@@ -50,16 +58,11 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         setUsers(mappedUsers);
       }
       
-      // Fetch tickets
-      const { data: fetchedTickets, error: ticketsError } = await supabase
-        .from('tickets')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      if (ticketsError) {
-        console.error("Error fetching tickets:", ticketsError);
-      } else if (fetchedTickets) {
-        const mappedTickets: Ticket[] = fetchedTickets.map(ticket => ({
+      // Handle tickets
+      if (ticketsResponse.error) {
+        console.error("Error fetching tickets:", ticketsResponse.error);
+      } else if (ticketsResponse.data) {
+        const mappedTickets: Ticket[] = ticketsResponse.data.map(ticket => ({
           id: ticket.id,
           title: ticket.title,
           description: ticket.description,
@@ -73,16 +76,11 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         setTickets(mappedTickets);
       }
       
-      // Fetch messages
-      const { data: fetchedMessages, error: messagesError } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: true });
-        
-      if (messagesError) {
-        console.error("Error fetching messages:", messagesError);
-      } else if (fetchedMessages) {
-        const mappedMessages: Message[] = fetchedMessages.map(message => ({
+      // Handle messages
+      if (messagesResponse.error) {
+        console.error("Error fetching messages:", messagesResponse.error);
+      } else if (messagesResponse.data) {
+        const mappedMessages: Message[] = messagesResponse.data.map(message => ({
           id: message.id,
           ticketId: message.ticket_id,
           content: message.content,
@@ -91,41 +89,154 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         }));
         setMessages(mappedMessages);
       }
-      
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
       setIsLoading(false);
-    };
+    }
+  };
+  
+  // Initialize data and set up realtime subscriptions
+  useEffect(() => {
+    // Fetch initial data
+    fetchData();
     
-    fetchInitialData();
-    
-    // Set up realtime subscription for tickets
-    const ticketsSubscription = supabase
-      .channel('public:tickets')
+    // Set up realtime subscriptions
+    const ticketsChannel = supabase
+      .channel('tickets-changes')
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
         table: 'tickets' 
-      }, payload => {
+      }, (payload) => {
         console.log('Tickets change received:', payload);
-        fetchInitialData();
+        
+        // Real-time update logic
+        if (payload.eventType === 'INSERT') {
+          const newTicket = payload.new as any;
+          setTickets(prevTickets => [
+            {
+              id: newTicket.id,
+              title: newTicket.title,
+              description: newTicket.description,
+              status: newTicket.status,
+              priority: newTicket.priority,
+              createdAt: newTicket.created_at,
+              updatedAt: newTicket.updated_at,
+              createdBy: newTicket.created_by,
+              assignedTo: newTicket.assigned_to
+            },
+            ...prevTickets
+          ]);
+        } else if (payload.eventType === 'UPDATE') {
+          const updatedTicket = payload.new as any;
+          setTickets(prevTickets => prevTickets.map(ticket => 
+            ticket.id === updatedTicket.id ? {
+              ...ticket,
+              title: updatedTicket.title,
+              description: updatedTicket.description,
+              status: updatedTicket.status,
+              priority: updatedTicket.priority,
+              updatedAt: updatedTicket.updated_at,
+              assignedTo: updatedTicket.assigned_to
+            } : ticket
+          ));
+        } else if (payload.eventType === 'DELETE') {
+          const deletedTicket = payload.old as any;
+          setTickets(prevTickets => prevTickets.filter(ticket => ticket.id !== deletedTicket.id));
+        }
       })
       .subscribe();
       
     // Set up realtime subscription for messages
-    const messagesSubscription = supabase
-      .channel('public:messages')
+    const messagesChannel = supabase
+      .channel('messages-changes')
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
         table: 'messages' 
-      }, payload => {
+      }, (payload) => {
         console.log('Messages change received:', payload);
-        fetchInitialData();
+        
+        // Real-time update logic
+        if (payload.eventType === 'INSERT') {
+          const newMessage = payload.new as any;
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              id: newMessage.id,
+              ticketId: newMessage.ticket_id,
+              content: newMessage.content,
+              createdAt: newMessage.created_at,
+              userId: newMessage.user_id
+            }
+          ]);
+          
+          // Play a sound for new messages
+          const audio = new Audio('/message.mp3');
+          audio.volume = 0.5;
+          audio.play().catch(e => console.log('Error playing sound:', e));
+        } else if (payload.eventType === 'UPDATE') {
+          const updatedMessage = payload.new as any;
+          setMessages(prevMessages => prevMessages.map(message => 
+            message.id === updatedMessage.id ? {
+              ...message,
+              content: updatedMessage.content,
+              createdAt: updatedMessage.created_at
+            } : message
+          ));
+        } else if (payload.eventType === 'DELETE') {
+          const deletedMessage = payload.old as any;
+          setMessages(prevMessages => prevMessages.filter(message => message.id !== deletedMessage.id));
+        }
+      })
+      .subscribe();
+      
+    // Set up realtime subscription for profiles
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'profiles' 
+      }, (payload) => {
+        console.log('Profiles change received:', payload);
+        
+        // Real-time update logic
+        if (payload.eventType === 'INSERT') {
+          const newProfile = payload.new as any;
+          setUsers(prevUsers => [
+            ...prevUsers,
+            {
+              id: newProfile.id,
+              email: newProfile.email,
+              name: newProfile.name,
+              role: newProfile.role as "admin" | "sublabel",
+              avatar: newProfile.avatar
+            }
+          ]);
+        } else if (payload.eventType === 'UPDATE') {
+          const updatedProfile = payload.new as any;
+          setUsers(prevUsers => prevUsers.map(user => 
+            user.id === updatedProfile.id ? {
+              ...user,
+              email: updatedProfile.email,
+              name: updatedProfile.name,
+              role: updatedProfile.role as "admin" | "sublabel",
+              avatar: updatedProfile.avatar
+            } : user
+          ));
+        } else if (payload.eventType === 'DELETE') {
+          const deletedProfile = payload.old as any;
+          setUsers(prevUsers => prevUsers.filter(user => user.id !== deletedProfile.id));
+        }
       })
       .subscribe();
       
     return () => {
-      supabase.removeChannel(ticketsSubscription);
-      supabase.removeChannel(messagesSubscription);
+      supabase.removeChannel(ticketsChannel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(profilesChannel);
     };
   }, []);
 

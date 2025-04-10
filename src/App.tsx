@@ -12,6 +12,7 @@ import TicketsPage from "@/pages/TicketsPage";
 import NewTicketPage from "@/pages/NewTicketPage";
 import TicketDetailPage from "@/pages/TicketDetailPage";
 import UsersPage from "@/pages/UsersPage";
+import SettingsPage from "@/pages/SettingsPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 const queryClient = new QueryClient();
@@ -95,27 +96,11 @@ const App = () => (
                 } 
               />
               
-              {/* Temporary placeholders for future pages */}
-              <Route 
-                path="/messages" 
-                element={
-                  <ProtectedRoute>
-                    <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">страница сообщений</h1>
-                      <p>эта страница находится в разработке</p>
-                    </div>
-                  </ProtectedRoute>
-                } 
-              />
-              
               <Route 
                 path="/settings" 
                 element={
                   <ProtectedRoute>
-                    <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold mb-4">настройки</h1>
-                      <p>эта страница находится в разработке</p>
-                    </div>
+                    <SettingsPage />
                   </ProtectedRoute>
                 } 
               />
