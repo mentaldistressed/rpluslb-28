@@ -8,9 +8,16 @@ interface NewsBannerProps {
   className?: string;
 }
 
+interface BannerSettings {
+  title: string;
+  content: string;
+  backgroundColor: string;
+  textColor: string;
+}
+
 export const NewsBanner = ({ className }: NewsBannerProps) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [newsContent, setNewsContent] = useState<string | null>(null);
+  const [bannerSettings, setBannerSettings] = useState<BannerSettings | null>(null);
   
   useEffect(() => {
     const fetchNewsContent = async () => {
@@ -22,7 +29,19 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
         .single();
         
       if (data && !error) {
-        setNewsContent(data.value);
+        try {
+          // Parse the JSON value
+          const parsedSettings = JSON.parse(data.value) as BannerSettings;
+          setBannerSettings(parsedSettings);
+        } catch (e) {
+          // If parsing fails, use the string value as content with default settings
+          setBannerSettings({
+            title: 'Объявление',
+            content: data.value,
+            backgroundColor: '#F2FCE2',
+            textColor: '#1A1F2C'
+          });
+        }
       }
     };
     
@@ -38,8 +57,19 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
         filter: 'key=eq.news_banner'
       }, (payload) => {
         if (payload.new) {
-          // Type assertion to access the value property
-          setNewsContent((payload.new as any).value);
+          try {
+            // Try to parse the new value as JSON
+            const newSettings = JSON.parse((payload.new as any).value) as BannerSettings;
+            setBannerSettings(newSettings);
+          } catch (e) {
+            // If parsing fails, use the string value as content with default settings
+            setBannerSettings({
+              title: 'Объявление',
+              content: (payload.new as any).value,
+              backgroundColor: '#F2FCE2',
+              textColor: '#1A1F2C'
+            });
+          }
         }
       })
       .subscribe();
@@ -49,29 +79,38 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
     };
   }, []);
   
-  if (!newsContent) return null;
+  if (!bannerSettings) return null;
   
   return (
     <Collapsible 
       open={isOpen} 
       onOpenChange={setIsOpen}
-      className={`border rounded-lg overflow-hidden bg-primary/5 ${className}`}
+      className={`border rounded-lg overflow-hidden ${className}`}
+      style={{ 
+        backgroundColor: `${bannerSettings.backgroundColor}20`, 
+        borderColor: `${bannerSettings.backgroundColor}40` 
+      }}
     >
-      <div className="flex items-center p-3 border-b bg-primary/10">
-        <InfoIcon className="h-4 w-4 text-primary mr-2" />
-        <span className="font-medium text-sm flex-1">Объявление</span>
+      <div className="flex items-center p-3 border-b" 
+           style={{ 
+             backgroundColor: `${bannerSettings.backgroundColor}30`,
+             borderColor: `${bannerSettings.backgroundColor}40`,
+             color: bannerSettings.textColor
+           }}>
+        <InfoIcon className="h-4 w-4 mr-2" />
+        <span className="font-medium text-sm flex-1">{bannerSettings.title}</span>
         <CollapsibleTrigger asChild>
-          <button className="p-1 rounded-full hover:bg-primary/10 transition-colors">
+          <button className="p-1 rounded-full hover:bg-white/20 transition-colors">
             {isOpen ? 
-              <ChevronUp className="h-4 w-4 text-primary" /> : 
-              <ChevronDown className="h-4 w-4 text-primary" />
+              <ChevronUp className="h-4 w-4" /> : 
+              <ChevronDown className="h-4 w-4" />
             }
           </button>
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent>
-        <div className="p-3 text-sm whitespace-pre-line">
-          {newsContent}
+        <div className="p-3 text-sm whitespace-pre-line" style={{ color: bannerSettings.textColor }}>
+          {bannerSettings.content}
         </div>
       </CollapsibleContent>
     </Collapsible>

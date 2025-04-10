@@ -3,16 +3,28 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NewsBanner } from "@/components/NewsBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Palette } from "lucide-react";
+import { Label } from "@/components/ui/label";
+
+interface BannerSettings {
+  title: string;
+  content: string;
+  backgroundColor: string;
+  textColor: string;
+}
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [bannerTitle, setBannerTitle] = useState("Объявление");
   const [newsContent, setNewsContent] = useState("");
+  const [backgroundColor, setBackgroundColor] = useState("#F2FCE2");
+  const [textColor, setTextColor] = useState("#1A1F2C");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -28,7 +40,17 @@ export default function SettingsPage() {
         .single();
         
       if (!error && data) {
-        setNewsContent(data.value);
+        try {
+          // Parse the JSON value
+          const parsedSettings = JSON.parse(data.value) as BannerSettings;
+          setBannerTitle(parsedSettings.title);
+          setNewsContent(parsedSettings.content);
+          setBackgroundColor(parsedSettings.backgroundColor);
+          setTextColor(parsedSettings.textColor);
+        } catch (e) {
+          // If parsing fails, use the string value as content with default settings
+          setNewsContent(data.value);
+        }
       }
       setIsLoading(false);
     };
@@ -42,12 +64,20 @@ export default function SettingsPage() {
     setIsSaving(true);
     
     try {
+      // Create a banner settings object
+      const bannerSettings: BannerSettings = {
+        title: bannerTitle,
+        content: newsContent,
+        backgroundColor: backgroundColor,
+        textColor: textColor
+      };
+      
       // Use a more generic approach for the upsert operation
       const { error } = await supabase
         .from('system_settings')
         .upsert({
           key: 'news_banner',
-          value: newsContent
+          value: JSON.stringify(bannerSettings)
         }, {
           onConflict: 'key'
         });
@@ -91,13 +121,63 @@ export default function SettingsPage() {
               Настройте текст объявления, который будет отображаться для всех пользователей
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Textarea
-              value={newsContent}
-              onChange={(e) => setNewsContent(e.target.value)}
-              placeholder="Введите текст объявления..."
-              className="min-h-[120px]"
-            />
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="banner-title">Заголовок объявления</Label>
+                <Input
+                  id="banner-title"
+                  value={bannerTitle}
+                  onChange={(e) => setBannerTitle(e.target.value)}
+                  placeholder="Заголовок объявления"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="text-color">Цвет текста</Label>
+                <div className="flex items-center space-x-2">
+                  <div 
+                    className="w-6 h-6 rounded border"
+                    style={{ backgroundColor: textColor }}
+                  />
+                  <Input
+                    id="text-color"
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                    className="w-full h-10"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="news-content">Текст объявления</Label>
+              <Textarea
+                id="news-content"
+                value={newsContent}
+                onChange={(e) => setNewsContent(e.target.value)}
+                placeholder="Введите текст объявления..."
+                className="min-h-[120px]"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="background-color">Цвет фона</Label>
+              <div className="flex items-center space-x-2">
+                <div 
+                  className="w-6 h-6 rounded border"
+                  style={{ backgroundColor: backgroundColor }}
+                />
+                <Input
+                  id="background-color"
+                  type="color"
+                  value={backgroundColor}
+                  onChange={(e) => setBackgroundColor(e.target.value)}
+                  className="w-full h-10"
+                />
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button 
