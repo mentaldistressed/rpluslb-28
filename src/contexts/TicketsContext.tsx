@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Ticket, Message, User } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -101,100 +100,120 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     // Fetch initial data
     fetchData();
     
-    // Set up realtime subscriptions
+    // Set up realtime subscription for tickets channel
     const ticketsChannel = supabase
-      .channel('tickets-changes')
+      .channel('tickets-channel')
       .on('postgres_changes', { 
-        event: '*', 
+        event: 'INSERT', 
         schema: 'public', 
         table: 'tickets' 
       }, (payload) => {
-        console.log('Tickets change received:', payload);
-        
-        // Real-time update logic
-        if (payload.eventType === 'INSERT') {
-          const newTicket = payload.new as any;
-          setTickets(prevTickets => [
-            {
-              id: newTicket.id,
-              title: newTicket.title,
-              description: newTicket.description,
-              status: newTicket.status,
-              priority: newTicket.priority,
-              createdAt: newTicket.created_at,
-              updatedAt: newTicket.updated_at,
-              createdBy: newTicket.created_by,
-              assignedTo: newTicket.assigned_to
-            },
-            ...prevTickets
-          ]);
-        } else if (payload.eventType === 'UPDATE') {
-          const updatedTicket = payload.new as any;
-          setTickets(prevTickets => prevTickets.map(ticket => 
-            ticket.id === updatedTicket.id ? {
-              ...ticket,
-              title: updatedTicket.title,
-              description: updatedTicket.description,
-              status: updatedTicket.status,
-              priority: updatedTicket.priority,
-              updatedAt: updatedTicket.updated_at,
-              assignedTo: updatedTicket.assigned_to
-            } : ticket
-          ));
-        } else if (payload.eventType === 'DELETE') {
-          const deletedTicket = payload.old as any;
-          setTickets(prevTickets => prevTickets.filter(ticket => ticket.id !== deletedTicket.id));
-        }
+        console.log('Ticket INSERT received:', payload);
+        const newTicket = payload.new as any;
+        setTickets(prevTickets => [
+          {
+            id: newTicket.id,
+            title: newTicket.title,
+            description: newTicket.description,
+            status: newTicket.status,
+            priority: newTicket.priority,
+            createdAt: newTicket.created_at,
+            updatedAt: newTicket.updated_at,
+            createdBy: newTicket.created_by,
+            assignedTo: newTicket.assigned_to
+          },
+          ...prevTickets
+        ]);
       })
-      .subscribe();
-      
-    // Set up realtime subscription for messages
-    const messagesChannel = supabase
-      .channel('messages-changes')
       .on('postgres_changes', { 
-        event: '*', 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'tickets' 
+      }, (payload) => {
+        console.log('Ticket UPDATE received:', payload);
+        const updatedTicket = payload.new as any;
+        setTickets(prevTickets => prevTickets.map(ticket => 
+          ticket.id === updatedTicket.id ? {
+            ...ticket,
+            title: updatedTicket.title,
+            description: updatedTicket.description,
+            status: updatedTicket.status,
+            priority: updatedTicket.priority,
+            updatedAt: updatedTicket.updated_at,
+            assignedTo: updatedTicket.assigned_to
+          } : ticket
+        ));
+      })
+      .on('postgres_changes', { 
+        event: 'DELETE', 
+        schema: 'public', 
+        table: 'tickets' 
+      }, (payload) => {
+        console.log('Ticket DELETE received:', payload);
+        const deletedTicket = payload.old as any;
+        setTickets(prevTickets => prevTickets.filter(ticket => ticket.id !== deletedTicket.id));
+      })
+      .subscribe((status) => {
+        console.log("Tickets subscription status:", status);
+      });
+      
+    // Set up realtime subscription for messages channel
+    const messagesChannel = supabase
+      .channel('messages-channel')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
         schema: 'public', 
         table: 'messages' 
       }, (payload) => {
-        console.log('Messages change received:', payload);
+        console.log('Message INSERT received:', payload);
+        const newMessage = payload.new as any;
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            id: newMessage.id,
+            ticketId: newMessage.ticket_id,
+            content: newMessage.content,
+            createdAt: newMessage.created_at,
+            userId: newMessage.user_id
+          }
+        ]);
         
-        // Real-time update logic
-        if (payload.eventType === 'INSERT') {
-          const newMessage = payload.new as any;
-          setMessages(prevMessages => [
-            ...prevMessages,
-            {
-              id: newMessage.id,
-              ticketId: newMessage.ticket_id,
-              content: newMessage.content,
-              createdAt: newMessage.created_at,
-              userId: newMessage.user_id
-            }
-          ]);
-          
-          // Play a sound for new messages
-          const audio = new Audio('/message.mp3');
-          audio.volume = 0.5;
-          audio.play().catch(e => console.log('Error playing sound:', e));
-        } else if (payload.eventType === 'UPDATE') {
-          const updatedMessage = payload.new as any;
-          setMessages(prevMessages => prevMessages.map(message => 
-            message.id === updatedMessage.id ? {
-              ...message,
-              content: updatedMessage.content,
-              createdAt: updatedMessage.created_at
-            } : message
-          ));
-        } else if (payload.eventType === 'DELETE') {
-          const deletedMessage = payload.old as any;
-          setMessages(prevMessages => prevMessages.filter(message => message.id !== deletedMessage.id));
-        }
+        // Play a sound for new messages
+        const audio = new Audio('/message.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log('Error playing sound:', e));
       })
-      .subscribe();
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'messages' 
+      }, (payload) => {
+        console.log('Message UPDATE received:', payload);
+        const updatedMessage = payload.new as any;
+        setMessages(prevMessages => prevMessages.map(message => 
+          message.id === updatedMessage.id ? {
+            ...message,
+            content: updatedMessage.content,
+            createdAt: updatedMessage.created_at
+          } : message
+        ));
+      })
+      .on('postgres_changes', { 
+        event: 'DELETE', 
+        schema: 'public', 
+        table: 'messages' 
+      }, (payload) => {
+        console.log('Message DELETE received:', payload);
+        const deletedMessage = payload.old as any;
+        setMessages(prevMessages => prevMessages.filter(message => message.id !== deletedMessage.id));
+      })
+      .subscribe((status) => {
+        console.log("Messages subscription status:", status);
+      });
       
-    // Set up realtime subscription for profiles
+    // Set up realtime subscription for profiles channel
     const profilesChannel = supabase
-      .channel('profiles-changes')
+      .channel('profiles-channel')
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
@@ -231,9 +250,12 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
           setUsers(prevUsers => prevUsers.filter(user => user.id !== deletedProfile.id));
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Profiles subscription status:", status);
+      });
       
     return () => {
+      console.log("Cleaning up Supabase channels");
       supabase.removeChannel(ticketsChannel);
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(profilesChannel);

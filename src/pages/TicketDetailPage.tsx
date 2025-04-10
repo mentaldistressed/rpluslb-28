@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTickets } from "@/contexts/TicketsContext";
@@ -20,7 +19,6 @@ import { ArrowLeft, Send, RefreshCw, Clock, MessageSquare, ChevronDown, ChevronU
 import { TicketStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { TicketClosedNotice } from "@/components/TicketClosedNotice";
-import { NewsBanner } from "@/components/NewsBanner";
 
 export default function TicketDetailPage() {
   const { ticketId } = useParams<{ ticketId: string }>();
@@ -35,7 +33,9 @@ export default function TicketDetailPage() {
     getUserById,
     updateTicketStatus,
     addMessage,
-    isLoading 
+    isLoading,
+    messages: allMessages,
+    tickets: allTickets
   } = useTickets();
   
   const { user } = useAuth();

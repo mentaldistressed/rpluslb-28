@@ -25,14 +25,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 p-6">
-          <div className="mb-4">
-            <NewsBanner />
-          </div>
-          {children}
-        </main>
+      <div className="flex flex-col flex-1">
+        <div className="w-full px-6 pt-6">
+          <NewsBanner />
+        </div>
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6 pt-4">
+            {children}
+          </main>
+        </div>
       </div>
       <Toaster />
     </div>
