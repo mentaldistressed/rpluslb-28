@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   // Fetch current news banner content
-  useState(() => {
+  useEffect(() => {
     const fetchNewsContent = async () => {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -33,7 +33,7 @@ export default function SettingsPage() {
     };
     
     fetchNewsContent();
-  });
+  }, []);
   
   const handleSaveNewsBanner = async () => {
     if (!user || user.role !== 'admin') return;
@@ -130,4 +130,4 @@ export default function SettingsPage() {
       )}
     </div>
   );
-}
+};
