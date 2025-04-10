@@ -33,14 +33,14 @@ export default function Sidebar() {
         href: "/users",
         icon: Users,
         active: location.pathname.startsWith('/users')
+      },
+      {
+        name: "настройки",
+        href: "/settings",
+        icon: Settings,
+        active: location.pathname.startsWith('/settings')
       }
     ] : []),
-    {
-      name: "настройки",
-      href: "/settings",
-      icon: Settings,
-      active: location.pathname.startsWith('/settings')
-    },
   ];
 
   return (
