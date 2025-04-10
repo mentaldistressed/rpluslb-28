@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { NewsBanner } from "@/components/NewsBanner";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw, Palette } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 interface BannerSettings {
@@ -16,6 +16,7 @@ interface BannerSettings {
   content: string;
   backgroundColor: string;
   textColor: string;
+  enabled: boolean;
 }
 
 export default function SettingsPage() {
@@ -25,6 +26,7 @@ export default function SettingsPage() {
   const [newsContent, setNewsContent] = useState("");
   const [backgroundColor, setBackgroundColor] = useState("#F2FCE2");
   const [textColor, setTextColor] = useState("#1A1F2C");
+  const [isEnabled, setIsEnabled] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -47,6 +49,7 @@ export default function SettingsPage() {
           setNewsContent(parsedSettings.content);
           setBackgroundColor(parsedSettings.backgroundColor);
           setTextColor(parsedSettings.textColor);
+          setIsEnabled(parsedSettings.enabled !== false); // Default to true if not specified
         } catch (e) {
           // If parsing fails, use the string value as content with default settings
           setNewsContent(data.value);
@@ -69,7 +72,8 @@ export default function SettingsPage() {
         title: bannerTitle,
         content: newsContent,
         backgroundColor: backgroundColor,
-        textColor: textColor
+        textColor: textColor,
+        enabled: isEnabled
       };
       
       // Use a more generic approach for the upsert operation
@@ -110,9 +114,6 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold">Настройки</h1>
       </div>
       
-      {/* Preview current news banner */}
-      <NewsBanner className="mb-6" />
-      
       {isAdmin && (
         <Card>
           <CardHeader>
@@ -122,6 +123,15 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="banner-enabled" 
+                checked={isEnabled}
+                onCheckedChange={setIsEnabled}
+              />
+              <Label htmlFor="banner-enabled">Включить объявление</Label>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="banner-title">Заголовок объявления</Label>

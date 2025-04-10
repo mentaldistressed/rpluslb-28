@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import { NewsBanner } from "@/components/NewsBanner";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -27,6 +28,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 p-6">
+          <div className="mb-4">
+            <NewsBanner />
+          </div>
           {children}
         </main>
       </div>

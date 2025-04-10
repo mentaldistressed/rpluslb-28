@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Ticket, Users, Plus, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { NewsBanner } from "@/components/NewsBanner";
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -49,11 +48,6 @@ export default function Sidebar() {
             </Button>
           </Link>
         )}
-        
-        {/* Add the NewsBanner component to the sidebar */}
-        <div className="my-4">
-          <NewsBanner />
-        </div>
         
         <nav className="space-y-1 mt-2">
           {navItems.map((item) => (

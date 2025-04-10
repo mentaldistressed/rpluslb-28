@@ -13,6 +13,7 @@ interface BannerSettings {
   content: string;
   backgroundColor: string;
   textColor: string;
+  enabled: boolean;
 }
 
 export const NewsBanner = ({ className }: NewsBannerProps) => {
@@ -39,7 +40,8 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
             title: 'Объявление',
             content: data.value,
             backgroundColor: '#F2FCE2',
-            textColor: '#1A1F2C'
+            textColor: '#1A1F2C',
+            enabled: true
           });
         }
       }
@@ -67,7 +69,8 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
               title: 'Объявление',
               content: (payload.new as any).value,
               backgroundColor: '#F2FCE2',
-              textColor: '#1A1F2C'
+              textColor: '#1A1F2C',
+              enabled: true
             });
           }
         }
@@ -79,7 +82,7 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
     };
   }, []);
   
-  if (!bannerSettings) return null;
+  if (!bannerSettings || !bannerSettings.enabled || !bannerSettings.content) return null;
   
   return (
     <Collapsible 
