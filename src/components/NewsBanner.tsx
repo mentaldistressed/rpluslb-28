@@ -91,7 +91,7 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
       className={`border rounded-lg overflow-hidden ${className}`}
       style={{ 
         backgroundColor: `${bannerSettings.backgroundColor}20`, 
-        borderColor: `${bannerSettings.backgroundColor}40` 
+        borderColor: `${bannerSettings.backgroundColor} 40` 
       }}
     >
       <div className="flex items-center p-3 border-b" 
@@ -102,14 +102,14 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
            }}>
         <InfoIcon className="h-4 w-4 mr-2" />
         <span className="font-medium text-sm flex-1">{bannerSettings.title}</span>
-        <CollapsibleTrigger asChild>
-          <button className="p-1 rounded-full hover:bg-white/20 transition-colors">
+        {/* <CollapsibleTrigger asChild> */}
+          {/* <button className="p-1 rounded-full hover:bg-white/20 transition-colors">
             {isOpen ? 
               <ChevronUp className="h-4 w-4" /> : 
               <ChevronDown className="h-4 w-4" />
             }
-          </button>
-        </CollapsibleTrigger>
+          </button> */}
+        {/* </CollapsibleTrigger> */}
       </div>
       <CollapsibleContent>
         <div className="p-3 text-sm whitespace-pre-line" style={{ color: bannerSettings.textColor }}>

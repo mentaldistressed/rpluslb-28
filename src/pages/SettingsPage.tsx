@@ -111,15 +111,15 @@ export default function SettingsPage() {
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Настройки</h1>
+        <h1 className="text-2xl font-bold">персональные настройки</h1>
       </div>
       
       {isAdmin && (
         <Card>
           <CardHeader>
-            <CardTitle>Управление объявлениями</CardTitle>
+            <CardTitle>управление объявлениями</CardTitle>
             <CardDescription>
-              Настройте текст объявления, который будет отображаться для всех пользователей
+              настройте текст объявления, который будет отображаться для всех пользователей
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -129,22 +129,22 @@ export default function SettingsPage() {
                 checked={isEnabled}
                 onCheckedChange={setIsEnabled}
               />
-              <Label htmlFor="banner-enabled">Включить объявление</Label>
+              <Label htmlFor="banner-enabled">включить объявление</Label>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="banner-title">Заголовок объявления</Label>
+                <Label htmlFor="banner-title">заголовок объявления</Label>
                 <Input
                   id="banner-title"
                   value={bannerTitle}
                   onChange={(e) => setBannerTitle(e.target.value)}
-                  placeholder="Заголовок объявления"
+                  placeholder="заголовок объявления"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="text-color">Цвет текста</Label>
+                <Label htmlFor="text-color">цвет текста</Label>
                 <div className="flex items-center space-x-2">
                   <div 
                     className="w-6 h-6 rounded border"
@@ -162,18 +162,18 @@ export default function SettingsPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="news-content">Текст объявления</Label>
+              <Label htmlFor="news-content">текст объявления</Label>
               <Textarea
                 id="news-content"
                 value={newsContent}
                 onChange={(e) => setNewsContent(e.target.value)}
-                placeholder="Введите текст объявления..."
+                placeholder="введите текст объявления..."
                 className="min-h-[120px]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="background-color">Цвет фона</Label>
+              <Label htmlFor="background-color">цвет фона</Label>
               <div className="flex items-center space-x-2">
                 <div 
                   className="w-6 h-6 rounded border"
@@ -197,10 +197,10 @@ export default function SettingsPage() {
               {isSaving ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Сохранение...
+                  сохранение...
                 </>
               ) : (
-                "Сохранить объявление"
+                "сохранить объявление"
               )}
             </Button>
           </CardFooter>
@@ -210,14 +210,14 @@ export default function SettingsPage() {
       {!isAdmin && (
         <Card>
           <CardHeader>
-            <CardTitle>Настройки пользователя</CardTitle>
+            <CardTitle>пока здесь ничего нет...</CardTitle>
             <CardDescription>
-              Эта страница находится в разработке
+              но скоро что-то точно появится :)
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              Скоро здесь появятся настройки для вашего аккаунта
+              страница находится в разработке
             </p>
           </CardContent>
         </Card>

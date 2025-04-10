@@ -190,11 +190,6 @@ export default function TicketDetailPage() {
         </Button>
       </div>
       
-      {/* News Banner */}
-      <div className="mb-6">
-        <NewsBanner />
-      </div>
-      
       <div className="space-y-6">
         {/* Header with ticket title and top-level details */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 bg-card border rounded-lg p-4 shadow-sm">
