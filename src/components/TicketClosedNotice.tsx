@@ -7,9 +7,9 @@ export const TicketClosedNotice = () => {
       <div className="flex justify-center">
         <AlertCircle className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="font-medium text-lg">Тикет закрыт</h3>
+      <h3 className="font-medium text-lg">тикет закрыт</h3>
       <p className="text-muted-foreground">
-        Этот тикет был закрыт. Вы не можете отправлять новые сообщения.
+        этот тикет был закрыт. больше Вы не можете отправлять в него новые сообщения
       </p>
     </div>
   );

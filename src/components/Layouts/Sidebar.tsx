@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Ticket, Users, Plus, Settings } from "lucide-react";
+import { Ticket, Users, Plus, Settings, Landmark } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,12 @@ export default function Sidebar() {
       href: "/tickets",
       icon: Ticket,
       active: location.pathname.startsWith('/tickets')
+    },
+    {
+      name: "финансы",
+      href: "/finances",
+      icon: Landmark,
+      active: location.pathname.startsWith('/finances')
     },
     ...(isAdmin ? [
       {

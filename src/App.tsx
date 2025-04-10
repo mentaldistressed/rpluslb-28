@@ -6,7 +6,6 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TicketsProvider } from "@/contexts/TicketsContext";
 import MainLayout from "@/components/Layouts/MainLayout";
 
-// Pages
 import LoginPage from "@/pages/LoginPage";
 import TicketsPage from "@/pages/TicketsPage";
 import NewTicketPage from "@/pages/NewTicketPage";
@@ -14,10 +13,10 @@ import TicketDetailPage from "@/pages/TicketDetailPage";
 import UsersPage from "@/pages/UsersPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import FinancesPage from "@/pages/FinancesPage";
 
 const queryClient = new QueryClient();
 
-// Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
@@ -32,7 +31,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Admin only route component
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
@@ -93,6 +91,15 @@ const App = () => (
                   <AdminRoute>
                     <UsersPage />
                   </AdminRoute>
+                } 
+              />
+
+              <Route 
+                path="/finances" 
+                element={
+                  <ProtectedRoute>
+                    <FinancesPage />
+                  </ProtectedRoute>
                 } 
               />
               
