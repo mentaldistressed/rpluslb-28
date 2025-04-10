@@ -14,9 +14,10 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
   
   useEffect(() => {
     const fetchNewsContent = async () => {
+      // Use a more generic approach to query the table without relying on type checking
       const { data, error } = await supabase
         .from('system_settings')
-        .select('value')
+        .select('*')
         .eq('key', 'news_banner')
         .single();
         
@@ -37,6 +38,7 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
         filter: 'key=eq.news_banner'
       }, (payload) => {
         if (payload.new) {
+          // Type assertion to access the value property
           setNewsContent((payload.new as any).value);
         }
       })

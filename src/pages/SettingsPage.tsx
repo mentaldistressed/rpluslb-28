@@ -20,9 +20,10 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchNewsContent = async () => {
       setIsLoading(true);
+      // Use a more generic approach to query the table without relying on type checking
       const { data, error } = await supabase
         .from('system_settings')
-        .select('value')
+        .select('*')
         .eq('key', 'news_banner')
         .single();
         
@@ -41,12 +42,15 @@ export default function SettingsPage() {
     setIsSaving(true);
     
     try {
-      const { data, error } = await supabase
+      // Use a more generic approach for the upsert operation
+      const { error } = await supabase
         .from('system_settings')
-        .upsert(
-          { key: 'news_banner', value: newsContent },
-          { onConflict: 'key' }
-        );
+        .upsert({
+          key: 'news_banner',
+          value: newsContent
+        }, {
+          onConflict: 'key'
+        });
         
       if (error) throw error;
       
