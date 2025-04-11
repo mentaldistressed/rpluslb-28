@@ -5,7 +5,7 @@ import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const SUPABASE_URL = "https://daqvphzqrnsxqthggwrw.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const SMTP_HOST = Deno.env.get("SMTP_HOST") || "";
+const SMTP_HOST = Deno.env.get("SMTP_HOST")?.trim() || "";
 const SMTP_PORT = Number(Deno.env.get("SMTP_PORT")) || 587;
 const SMTP_USER = Deno.env.get("SMTP_USER") || "";
 const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD") || "";
