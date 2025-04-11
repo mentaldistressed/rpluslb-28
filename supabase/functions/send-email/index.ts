@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const SUPABASE_URL = "https://daqvphzqrnsxqthggwrw.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -31,83 +32,30 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       throw new Error("SMTP configuration is incomplete");
     }
 
-    const conn = await Deno.connect({ hostname: SMTP_HOST, port: SMTP_PORT });
-    const reader = conn.readable.getReader();
-    const writer = conn.writable.getWriter();
-
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
-    const read = async () => {
-      const { value, done } = await reader.read();
-      return decoder.decode(value);
-    };
-
-    const write = async (s: string) => {
-      console.log(`> ${s}`);
-      await writer.write(encoder.encode(s + "\r\n"));
-    };
-
-    const response = await read();
-    console.log(`< ${response}`);
-
-    await write("EHLO rplus.app");
-    await read();
-
-    await write("STARTTLS");
-    await read();
-
-    // Upgrade connection to TLS
-    const tls = await Deno.startTls(conn, { hostname: SMTP_HOST });
-    const tlsReader = tls.readable.getReader();
-    const tlsWriter = tls.writable.getWriter();
-
-    const tlsRead = async () => {
-      const { value, done } = await tlsReader.read();
-      return decoder.decode(value);
-    };
-
-    const tlsWrite = async (s: string) => {
-      console.log(`> ${s}`);
-      await tlsWriter.write(encoder.encode(s + "\r\n"));
-    };
-
-    await tlsWrite("EHLO rplus.app");
-    await tlsRead();
-
-    await tlsWrite(`AUTH LOGIN`);
-    await tlsRead();
-
-    await tlsWrite(btoa(SMTP_USER));
-    await tlsRead();
-
-    await tlsWrite(btoa(SMTP_PASSWORD));
-    await tlsRead();
-
-    await tlsWrite(`MAIL FROM: <${FROM_EMAIL}>`);
-    await tlsRead();
-
-    await tlsWrite(`RCPT TO: <${to}>`);
-    await tlsRead();
-
-    await tlsWrite("DATA");
-    await tlsRead();
-
-    await tlsWrite(`From: rplus <${FROM_EMAIL}>`);
-    await tlsWrite(`To: <${to}>`);
-    await tlsWrite(`Subject: ${subject}`);
-    await tlsWrite("Content-Type: text/html; charset=utf-8");
-    await tlsWrite("");
-    await tlsWrite(body);
-    await tlsWrite(".");
-    await tlsRead();
-
-    await tlsWrite("QUIT");
-    await tlsRead();
-
-    tlsWriter.close();
-    tlsReader.releaseLock();
+    console.log(`Attempting to send email to ${to} via ${SMTP_HOST}:${SMTP_PORT}`);
     
+    const client = new SMTPClient({
+      connection: {
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        tls: true,
+        auth: {
+          username: SMTP_USER,
+          password: SMTP_PASSWORD,
+        },
+      },
+    });
+
+    await client.send({
+      from: FROM_EMAIL,
+      to: to,
+      subject: subject,
+      content: "text/html",
+      html: body,
+    });
+
+    await client.close();
+    console.log("Email sent successfully");
     return true;
   } catch (error) {
     console.error("Error sending email:", error);
@@ -144,15 +92,29 @@ serve(async (req) => {
   
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    
+    // Проверяем содержимое запроса
     const payload: EmailPayload = await req.json();
+    console.log("Received email request:", JSON.stringify(payload, null, 2));
+    
     const { to, subject, body } = payload;
     
     if (!to || !subject || !body) {
+      console.error("Missing required fields:", { to, subject, bodyPresent: !!body });
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    // Выводим информацию о конфигурации SMTP (без пароля)
+    console.log("SMTP Config:", {
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      user: SMTP_USER,
+      fromEmail: FROM_EMAIL,
+      hasPassword: !!SMTP_PASSWORD
+    });
     
     const success = await sendEmailWithSMTP(to, subject, body);
     
