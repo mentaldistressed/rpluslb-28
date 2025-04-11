@@ -1,18 +1,24 @@
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useTickets } from "@/contexts/TicketsContext";
 import { Button } from "@/components/ui/button";
 import { Ticket, Users, Plus, Settings, Landmark } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 export default function Sidebar() {
   const { user } = useAuth();
+  const { userCanAccessTicket } = useTickets();
   const location = useLocation();
+  const { ticketId } = useParams<{ ticketId: string }>();
   
   if (!user) return null;
 
   const isAdmin = user.role === 'admin';
   const isUser = user.role === 'sublabel';
+  
+  // Проверяем доступ к текущему тикету, если мы находимся на странице тикета
+  const hasTicketAccess = !ticketId || userCanAccessTicket(ticketId);
   
   const navItems = [
     {

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTickets } from "@/contexts/TicketsContext";
@@ -35,7 +36,8 @@ export default function TicketDetailPage() {
     addMessage,
     isLoading,
     messages: allMessages,
-    tickets: allTickets
+    tickets: allTickets,
+    userCanAccessTicket
   } = useTickets();
   
   const { user } = useAuth();
@@ -43,6 +45,18 @@ export default function TicketDetailPage() {
   const [currentStatus, setCurrentStatus] = useState<TicketStatus>();
   const [isSending, setIsSending] = useState(false);
   const [showKeyboardHint, setShowKeyboardHint] = useState(true);
+  
+  // Проверка доступа к тикету
+  useEffect(() => {
+    if (ticketId && user && !userCanAccessTicket(ticketId)) {
+      toast({
+        title: "Доступ запрещен",
+        description: "У вас нет доступа к этому тикету",
+        variant: "destructive",
+      });
+      navigate("/tickets");
+    }
+  }, [ticketId, user, navigate, userCanAccessTicket, toast]);
   
   // Get ticket and messages
   const ticket = ticketId ? getTicketById(ticketId) : undefined;

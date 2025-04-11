@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Ticket, Message, User } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -15,6 +16,7 @@ interface TicketsContextType {
   assignTicket: (ticketId: string, userId: string) => Promise<boolean>;
   addMessage: (ticketId: string, content: string) => Promise<boolean>;
   isLoading: boolean;
+  userCanAccessTicket: (ticketId: string) => boolean;
 }
 
 const TicketsContext = createContext<TicketsContextType | undefined>(undefined);
@@ -26,6 +28,56 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Функция для отправки уведомлений по email
+  const sendEmailNotification = async (
+    recipientEmail: string,
+    subject: string,
+    content: string,
+    ticketId?: string,
+    messageId?: string,
+    userId?: string,
+    ticketStatus?: string
+  ) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: recipientEmail,
+          subject,
+          body: content,
+          ticketId,
+          messageId,
+          userId,
+          ticketStatus
+        }
+      });
+
+      if (error) {
+        console.error("Ошибка отправки уведомления:", error);
+        return false;
+      }
+
+      console.log("Уведомление успешно отправлено:", data);
+      return true;
+    } catch (error) {
+      console.error("Ошибка вызова функции отправки уведомления:", error);
+      return false;
+    }
+  };
+
+  // Функция для проверки доступа к тикету
+  const userCanAccessTicket = (ticketId: string) => {
+    if (!user) return false;
+    
+    // Админы имеют доступ ко всем тикетам
+    if (user.role === 'admin') return true;
+    
+    // Саб-лейблы имеют доступ только к своим тикетам
+    const ticket = getTicketById(ticketId);
+    if (!ticket) return false;
+    
+    return ticket.createdBy === user.id;
+  };
 
   // Function to fetch all data from the database
   const fetchData = async () => {
@@ -107,9 +159,11 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         event: 'INSERT', 
         schema: 'public', 
         table: 'tickets' 
-      }, (payload) => {
+      }, async (payload) => {
         console.log('Ticket INSERT received:', payload);
         const newTicket = payload.new as any;
+        
+        // Добавляем новый тикет в состояние
         setTickets(prevTickets => [
           {
             id: newTicket.id,
@@ -124,14 +178,56 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
           },
           ...prevTickets
         ]);
+        
+        // Отправляем уведомление администраторам о новом тикете
+        if (user && user.role !== 'admin') {
+          // Получаем пользователя, создавшего тикет
+          const creator = users.find(u => u.id === newTicket.created_by);
+          
+          // Получаем всех администраторов
+          const admins = users.filter(u => u.role === 'admin');
+          
+          // Отправляем уведомление каждому администратору
+          for (const admin of admins) {
+            if (admin.email) {
+              await sendEmailNotification(
+                admin.email,
+                `Новый тикет: ${newTicket.title}`,
+                `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                  <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Создан новый тикет</h2>
+                  <p><strong>Заголовок:</strong> ${newTicket.title}</p>
+                  <p><strong>Приоритет:</strong> ${
+                    newTicket.priority === 'low' ? 'Низкий' : 
+                    newTicket.priority === 'medium' ? 'Средний' : 'Высокий'
+                  }</p>
+                  <p><strong>Создан:</strong> ${creator?.name || 'Неизвестный пользователь'}</p>
+                  <p><strong>Описание:</strong> ${newTicket.description}</p>
+                  <div style="margin-top: 20px; text-align: center;">
+                    <a href="${window.location.origin}/tickets/${newTicket.id}" 
+                       style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px;">
+                      Перейти к тикету
+                    </a>
+                  </div>
+                </div>
+                `,
+                newTicket.id,
+                undefined,
+                creator?.id
+              );
+            }
+          }
+        }
       })
       .on('postgres_changes', { 
         event: 'UPDATE', 
         schema: 'public', 
         table: 'tickets' 
-      }, (payload) => {
+      }, async (payload) => {
         console.log('Ticket UPDATE received:', payload);
         const updatedTicket = payload.new as any;
+        const oldTicket = payload.old as any;
+        
         setTickets(prevTickets => prevTickets.map(ticket => 
           ticket.id === updatedTicket.id ? {
             ...ticket,
@@ -143,6 +239,45 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
             assignedTo: updatedTicket.assigned_to
           } : ticket
         ));
+        
+        // Отправляем уведомление, если изменился статус тикета
+        if (updatedTicket.status !== oldTicket.status) {
+          const statusChanged = updatedTicket.status !== oldTicket.status;
+          
+          // Если статус изменился и создатель тикета не является текущим пользователем
+          if (statusChanged && user && user.id !== updatedTicket.created_by) {
+            // Получаем создателя тикета
+            const creator = users.find(u => u.id === updatedTicket.created_by);
+            
+            if (creator && creator.email && creator.role === 'sublabel') {
+              // Отправляем уведомление создателю тикета
+              await sendEmailNotification(
+                creator.email,
+                `Обновление статуса тикета: ${updatedTicket.title}`,
+                `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                  <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Статус тикета обновлен</h2>
+                  <p><strong>Заголовок:</strong> ${updatedTicket.title}</p>
+                  <p><strong>Новый статус:</strong> ${
+                    updatedTicket.status === 'open' ? 'Открыт' : 
+                    updatedTicket.status === 'in-progress' ? 'В обработке' : 'Закрыт'
+                  }</p>
+                  <div style="margin-top: 20px; text-align: center;">
+                    <a href="${window.location.origin}/tickets/${updatedTicket.id}" 
+                       style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px;">
+                      Перейти к тикету
+                    </a>
+                  </div>
+                </div>
+                `,
+                updatedTicket.id,
+                undefined,
+                undefined,
+                updatedTicket.status
+              );
+            }
+          }
+        }
       })
       .on('postgres_changes', { 
         event: 'DELETE', 
@@ -164,9 +299,10 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         event: 'INSERT', 
         schema: 'public', 
         table: 'messages' 
-      }, (payload) => {
+      }, async (payload) => {
         console.log('Message INSERT received:', payload);
         const newMessage = payload.new as any;
+        
         setMessages(prevMessages => [
           ...prevMessages,
           {
@@ -177,6 +313,79 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
             userId: newMessage.user_id
           }
         ]);
+        
+        // Получаем информацию о тикете
+        const ticket = tickets.find(t => t.id === newMessage.ticket_id);
+        if (!ticket) return;
+        
+        // Получаем отправителя сообщения
+        const sender = users.find(u => u.id === newMessage.user_id);
+        if (!sender) return;
+        
+        // Отправляем уведомление в зависимости от ролей пользователей
+        
+        // 1. Если отправитель - саб-лейбл, уведомляем админов
+        if (sender.role === 'sublabel') {
+          // Получаем всех администраторов
+          const admins = users.filter(u => u.role === 'admin');
+          
+          // Отправляем уведомление каждому администратору
+          for (const admin of admins) {
+            if (admin.email && admin.id !== newMessage.user_id) {
+              await sendEmailNotification(
+                admin.email,
+                `Новое сообщение в тикете: ${ticket.title}`,
+                `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                  <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Новое сообщение в тикете</h2>
+                  <p><strong>Тикет:</strong> ${ticket.title}</p>
+                  <p><strong>От:</strong> ${sender.name}</p>
+                  <p><strong>Сообщение:</strong> ${newMessage.content}</p>
+                  <div style="margin-top: 20px; text-align: center;">
+                    <a href="${window.location.origin}/tickets/${ticket.id}" 
+                       style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px;">
+                      Перейти к тикету
+                    </a>
+                  </div>
+                </div>
+                `,
+                ticket.id,
+                newMessage.id,
+                sender.id
+              );
+            }
+          }
+        }
+        
+        // 2. Если отправитель - админ, уведомляем создателя тикета (саб-лейбл)
+        if (sender.role === 'admin') {
+          // Получаем создателя тикета
+          const creator = users.find(u => u.id === ticket.createdBy);
+          
+          if (creator && creator.email && creator.role === 'sublabel') {
+            await sendEmailNotification(
+              creator.email,
+              `Новое сообщение в вашем тикете: ${ticket.title}`,
+              `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Новое сообщение в вашем тикете</h2>
+                <p><strong>Тикет:</strong> ${ticket.title}</p>
+                <p><strong>От:</strong> ${sender.name} (Менеджер)</p>
+                <p><strong>Сообщение:</strong> ${newMessage.content}</p>
+                <div style="margin-top: 20px; text-align: center;">
+                  <a href="${window.location.origin}/tickets/${ticket.id}" 
+                     style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px;">
+                    Перейти к тикету
+                  </a>
+                </div>
+              </div>
+              `,
+              ticket.id,
+              newMessage.id,
+              sender.id
+            );
+          }
+        }
         
         // Play a sound for new messages
         const audio = new Audio('/message.mp3');
@@ -260,7 +469,7 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(profilesChannel);
     };
-  }, []);
+  }, [user]);
 
   const getTicketById = (id: string) => {
     return tickets.find(ticket => ticket.id === id);
@@ -458,7 +667,8 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
       updateTicketStatus,
       assignTicket,
       addMessage,
-      isLoading
+      isLoading,
+      userCanAccessTicket
     }}>
       {children}
     </TicketsContext.Provider>
