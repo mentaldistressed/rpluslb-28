@@ -44,7 +44,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user || user.role !== 'admin') {
-    return <Navigate to="/releases" replace />;
+    return <Navigate to="/tickets" replace />;
   }
   
   return <>{children}</>;
@@ -61,7 +61,7 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               
               {/* Protected routes */}
-              <Route path="/" element={<Navigate to="/releases" replace />} />
+              <Route path="/" element={<Navigate to="/tickets" replace />} />
               
               <Route 
                 path="/tickets" 
