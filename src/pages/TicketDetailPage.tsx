@@ -312,12 +312,17 @@ export default function TicketDetailPage() {
                             <div>
                               <div className={`mb-1 flex items-center gap-2 ${isCurrentUser ? 'justify-end' : ''}`}>
                                 <div className="font-medium text-sm">
-                                  {messageUser.role === 'admin' && (
-                                    <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded mr-1">
-                                      Менеджер
-                                    </span>
-                                  )}
-                                  {messageUser.name}
+                                {messageUser.role === 'admin' && (
+                                  <span
+                                    className={`
+                                      text-xs px-1.5 py-0.5 rounded mr-1
+                                      ${messageUser.name === 'rplus' ? 'bg-blue-200' : 'bg-primary/10 text-primary'}
+                                    `}
+                                  >
+                                    {messageUser.name === 'rplus' ? 'Система' : 'Менеджер'}
+                                  </span>
+                                )}
+                                {messageUser.name}
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {messageTime}

@@ -249,7 +249,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">пользователи</h1>
         
@@ -286,7 +286,7 @@ export default function UsersPage() {
                   type="email"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="mail@label.ru"
+                  placeholder="example@domain.com"
                 />
               </div>
               

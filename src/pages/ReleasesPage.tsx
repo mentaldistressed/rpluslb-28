@@ -68,22 +68,41 @@ export default function SettingsPage() {
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">финансы</h1>
+        <h1 className="text-2xl font-bold">каталог</h1>
       </div>
-
-        <Card>
+      <pre className="text-sm text-gray-500 font-mono leading-tight">
+        {String.raw`
+            ______
+            |      |
+            |  ___ |
+            | | o ||   ← большой палец
+            | |___||
+            |   |     
+            |   |       ← указательный
+            |   |       ← средний
+            |  / \      
+            /__/ \_\     ← кулак
+        
+        хуй тебе а не каталог!`}
+        </pre>
+      {/* <p className="text-muted-foreground mt-1">
+          страница в разработке
+        </p> */}
+      <p className="text-xl text-gray-600"></p>
+        {/* <Card>
           <CardHeader>
-            <CardTitle>денег нет, но вы держитесь...</CardTitle>
+            <CardTitle>нет доступных релизов</CardTitle>
+            
             <CardDescription>
               но скоро, наверное, появятся (не обещаем)
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              страница находится в разработке
+              здесь будут отображаться ваши релизы
             </p>
           </CardContent>
-        </Card>
+        </Card> */}
     </div>
   );
 };

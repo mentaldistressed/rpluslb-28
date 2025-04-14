@@ -2,7 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useTickets } from "@/contexts/TicketsContext";
 import { Button } from "@/components/ui/button";
-import { Ticket, Users, Plus, Settings, Landmark } from "lucide-react";
+import { Ticket, Users, Plus, Settings, Landmark, Library } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,12 @@ export default function Sidebar() {
   const navItems = [
     ...(isUser ? [
       {
+        name: "мой каталог",
+        href: "/releases",
+        icon: Library,
+        active: location.pathname.startsWith('/releases')
+      },
+      {
         name: "мои тикеты",
         href: "/tickets",
         icon: Ticket,
@@ -36,6 +42,12 @@ export default function Sidebar() {
       }
     ] : []),
     ...(isAdmin ? [
+      {
+        name: "управление каталогами",
+        href: "/releases",
+        icon: Library,
+        active: location.pathname.startsWith('/releases')
+      },
       {
         name: "управление тикетами",
         href: "/tickets",

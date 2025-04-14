@@ -63,7 +63,7 @@ export default function TicketsPage() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">тикеты</h1>
         {user.role === 'sublabel' && (

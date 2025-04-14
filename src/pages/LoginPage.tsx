@@ -169,7 +169,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="mail@label.ru"
+                  placeholder="example@domain.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -192,13 +192,14 @@ export default function LoginPage() {
               </Button>
             </CardFooter>
           </form>
-        </Card>
+          </Card>
         
         <div className="mt-6 text-center">
+          
                     <Dialog>
             <DialogTrigger asChild>
               {/* <Button variant="link" className="text-sm text-muted-foreground hover:text-primary">
-                Создать аккаунт администратора
+                войти как артист
               </Button> */}
             </DialogTrigger>
             <DialogContent>

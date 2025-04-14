@@ -15,6 +15,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import FinancesPage from "@/pages/FinancesPage";
 import MaintenancePage from "@/pages/MaintenancePage";
+import ReleasesPage from "@/pages/ReleasesPage";
 
 // Import Russian locale for date-fns
 import { ru } from "date-fns/locale";
@@ -43,7 +44,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user || user.role !== 'admin') {
-    return <Navigate to="/tickets" replace />;
+    return <Navigate to="/releases" replace />;
   }
   
   return <>{children}</>;
@@ -60,13 +61,22 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               
               {/* Protected routes */}
-              <Route path="/" element={<Navigate to="/tickets" replace />} />
+              <Route path="/" element={<Navigate to="/releases" replace />} />
               
               <Route 
                 path="/tickets" 
                 element={
                   <ProtectedRoute>
                     <TicketsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/releases" 
+                element={
+                  <ProtectedRoute>
+                    <ReleasesPage />
                   </ProtectedRoute>
                 } 
               />
