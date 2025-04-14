@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Tools, Clock } from "lucide-react";
+import { Loader2, Wrench, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, formatDistance } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -84,7 +84,7 @@ export default function MaintenancePage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center pb-2">
           <div className="mx-auto bg-primary/10 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-            <Tools className="h-8 w-8 text-primary" />
+            <Wrench className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-2xl">технические работы</CardTitle>
         </CardHeader>
