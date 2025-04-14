@@ -43,7 +43,7 @@ export default function Sidebar() {
     ] : []),
     ...(isAdmin ? [
       {
-        name: "управление каталогами",
+        name: "управление каталогом",
         href: "/releases",
         icon: Library,
         active: location.pathname.startsWith('/releases')
