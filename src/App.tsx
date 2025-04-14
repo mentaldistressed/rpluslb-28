@@ -14,6 +14,10 @@ import UsersPage from "@/pages/UsersPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import FinancesPage from "@/pages/FinancesPage";
+import MaintenancePage from "@/pages/MaintenancePage";
+
+// Import Russian locale for date-fns
+import { ru } from "date-fns/locale";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +114,11 @@ const App = () => (
                     <SettingsPage />
                   </ProtectedRoute>
                 } 
+              />
+              
+              <Route 
+                path="/maintenance" 
+                element={<MaintenancePage />} 
               />
               
               {/* Catch-all route */}

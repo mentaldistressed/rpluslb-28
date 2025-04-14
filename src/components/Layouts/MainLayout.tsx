@@ -1,10 +1,18 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { NewsBanner } from "@/components/NewsBanner";
+import { supabase } from "@/integrations/supabase/client";
+import MaintenancePage from "@/pages/MaintenancePage";
+
+interface MaintenanceSettings {
+  enabled: boolean;
+  endTime: string;
+  message: string;
+}
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -12,6 +20,76 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const { user } = useAuth();
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [isCheckingMaintenance, setIsCheckingMaintenance] = useState(true);
+
+  // Check if maintenance mode is enabled
+  useEffect(() => {
+    const checkMaintenanceMode = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('system_settings')
+          .select('*')
+          .eq('key', 'maintenance_mode')
+          .single();
+
+        if (!error && data && data.value) {
+          const settings = JSON.parse(data.value) as MaintenanceSettings;
+          setMaintenanceMode(settings.enabled);
+        } else {
+          setMaintenanceMode(false);
+        }
+      } catch (error) {
+        console.error("Error checking maintenance mode:", error);
+        setMaintenanceMode(false);
+      } finally {
+        setIsCheckingMaintenance(false);
+      }
+    };
+
+    checkMaintenanceMode();
+
+    // Subscribe to changes in the system_settings table
+    const subscription = supabase
+      .channel('system_settings_changes')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'system_settings',
+        filter: 'key=eq.maintenance_mode'
+      }, (payload) => {
+        if (payload.new && payload.new.value) {
+          try {
+            const settings = JSON.parse(payload.new.value as string) as MaintenanceSettings;
+            setMaintenanceMode(settings.enabled);
+          } catch (e) {
+            console.error("Error parsing maintenance settings update:", e);
+          }
+        }
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Show loading state while checking maintenance mode
+  if (isCheckingMaintenance) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex h-screen items-center justify-center">
+          <span>загрузка...</span>
+        </div>
+        <Toaster />
+      </div>
+    );
+  }
+
+  // Show maintenance page for non-admin users when in maintenance mode
+  if (maintenanceMode && user && user.role !== 'admin') {
+    return <MaintenancePage />;
+  }
 
   if (!user) {
     return (
@@ -26,9 +104,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <div className="flex flex-col flex-1">
-        {/* <div className="w-full px-6 pt-6">
-          <NewsBanner />
-        </div> */}
         <div className="flex flex-1">
         <Sidebar />
          <main className="flex-1 p-6">
