@@ -83,7 +83,7 @@ export default function SettingsPage() {
             |  / \      
             /__/ \_\     ← кулак
         
-        хуй тебе а не каталог!`}
+    хуйхуйхуйхуйхуй тебе а не каталог!`}
         </pre>
       {/* <p className="text-muted-foreground mt-1">
           страница в разработке
