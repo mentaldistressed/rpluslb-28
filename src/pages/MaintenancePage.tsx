@@ -1,11 +1,18 @@
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, Wrench, Clock, ExternalLink, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { format, formatDistance } from "date-fns";
+import { format, addMinutes } from "date-fns";
 import { ru } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { 
+  ShieldAlert, 
+  Clock, 
+  RefreshCw, 
+  AlertTriangle,
+  ArrowRight
+} from "lucide-react";
 
 interface MaintenanceSettings {
   enabled: boolean;
@@ -18,6 +25,7 @@ export default function MaintenancePage() {
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
 
   useEffect(() => {
     const fetchMaintenanceSettings = async () => {
@@ -35,6 +43,9 @@ export default function MaintenancePage() {
           if (settings.endTime) {
             const parsedEndTime = new Date(settings.endTime);
             setEndTime(parsedEndTime);
+          } else {
+            // If no end time is set, default to 30 minutes from now
+            setEndTime(addMinutes(new Date(), 30));
           }
         }
       } catch (error) {
@@ -55,12 +66,8 @@ export default function MaintenancePage() {
       const now = new Date();
       
       if (endTime > now) {
-        setTimeRemaining(
-          formatDistance(endTime, now, { 
-            addSuffix: false,
-            locale: ru 
-          })
-        );
+        const formattedDistance = format(endTime, "HH:mm", { locale: ru });
+        setTimeRemaining(formattedDistance);
       } else {
         setTimeRemaining("скоро");
       }
@@ -72,73 +79,95 @@ export default function MaintenancePage() {
     return () => clearInterval(interval);
   }, [endTime]);
 
+  const handleCheckAvailability = () => {
+    setIsCheckingAvailability(true);
+    
+    // Simulate checking availability
+    setTimeout(() => {
+      setIsCheckingAvailability(false);
+      window.location.replace('/');
+    }, 1500);
+  };
+
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center justify-center">
+        <div className="w-full max-w-md space-y-6">
+          <Skeleton className="h-12 w-12 rounded-full mx-auto" />
+          <Skeleton className="h-8 w-3/4 mx-auto" />
+          <Skeleton className="h-32 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
       </div>
     );
   }
 
-  const handleCheckAvailability = () => {
-    window.location.replace('/');
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-6">
-          <div className="rounded-full bg-primary/10 p-5 w-20 h-20 flex items-center justify-center mb-4 animate-fade-in">
-            <Wrench className="h-8 w-8 text-primary" />
+    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+      <div className="max-w-md mx-auto pt-10 md:pt-20">
+        {/* Header with Alert Icon */}
+        <div className="flex items-center justify-center mb-8">
+          <div className="relative">
+            <div className="absolute inset-0 animate-pulse bg-yellow-200 rounded-full opacity-20"></div>
+            <AlertTriangle size={50} className="text-yellow-500 relative z-10" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
-            технические работы
-          </h1>
         </div>
         
-        <Card className="border-0 shadow-lg overflow-hidden animate-fade-in">
-          <CardContent className="p-0">
-            <div className="bg-white p-6 border-b border-slate-100">
-              <p className="text-slate-600 text-center">{message}</p>
-              
-              {endTime && (
-                <div className="mt-6 space-y-4">
-                  <div className="bg-slate-50 rounded-lg p-5 border border-slate-100">
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center text-sm text-slate-500">
-                        <Clock className="mr-2 h-4 w-4 text-slate-400" />
-                        примерное время ожидания
-                      </div>
-                      <div className="text-xs text-slate-400 font-mono">
-                        {format(endTime, "dd.MM.yyyy HH:mm", { locale: ru })}
-                      </div>
-                    </div>
-                    
-                    <div className="text-2xl font-bold text-slate-800 text-center">
-                      {timeRemaining}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Main Content */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden animate-fade-in">
+          {/* Status Header */}
+          <div className="bg-slate-800 p-4 flex items-center">
+            <ShieldAlert className="text-yellow-400 mr-3" />
+            <h1 className="text-white font-semibold">Техническое обслуживание</h1>
+          </div>
+          
+          {/* Message */}
+          <div className="p-6">
+            <p className="text-slate-700 mb-6">{message}</p>
             
-            <div className="bg-slate-50 p-6">
-              <Button
-                onClick={handleCheckAvailability}
-                variant="outline"
-                className="w-full group hover:bg-primary hover:text-white transition-colors"
-              >
-                <span>проверить доступность</span>
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
+            {/* Estimated time section */}
+            <div className="mb-6 bg-slate-50 rounded-lg p-4 border border-slate-100">
+              <div className="flex items-center justify-between text-sm text-slate-600 mb-2">
+                <div className="flex items-center">
+                  <Clock className="mr-2 h-4 w-4 text-slate-400" />
+                  <span>Ориентировочное время завершения</span>
+                </div>
+              </div>
               
-              <div className="mt-4 text-center">
-                <p className="text-primary text-sm font-medium">ЛКПО</p>
-                <p className="text-xs text-slate-400">© rplus</p>
+              <div className="text-center">
+                <span className="text-2xl font-mono text-slate-800">
+                  {endTime ? format(endTime, "dd.MM.yyyy • HH:mm", { locale: ru }) : "--:--"}
+                </span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            
+            <Separator className="my-6" />
+            
+            {/* Action button */}
+            <Button 
+              onClick={handleCheckAvailability} 
+              disabled={isCheckingAvailability}
+              className="w-full"
+            >
+              {isCheckingAvailability ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Проверка...
+                </>
+              ) : (
+                <>
+                  Проверить доступность
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {/* Footer */}
+          <div className="bg-slate-50 p-3 text-center border-t border-slate-100">
+            <p className="text-xs text-slate-500">© ЛКПО · {new Date().getFullYear()}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
