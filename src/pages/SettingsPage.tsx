@@ -38,7 +38,7 @@ export default function SettingsPage() {
   
   const [maintenanceEnabled, setMaintenanceEnabled] = useState(false);
   const [maintenanceEndTime, setMaintenanceEndTime] = useState("");
-  const [maintenanceMessage, setMaintenanceMessage] = useState("Проводятся технические работы. Личный кабинет временно недоступен.");
+  const [maintenanceMessage, setMaintenanceMessage] = useState("проводятся технические работы. личный кабинет временно недоступен.");
   const [maintenanceSaving, setMaintenanceSaving] = useState(false);
   
   useEffect(() => {
@@ -76,7 +76,7 @@ export default function SettingsPage() {
             const parsedSettings = JSON.parse(maintenanceData.value) as MaintenanceSettings;
             setMaintenanceEnabled(parsedSettings.enabled);
             setMaintenanceEndTime(parsedSettings.endTime || "");
-            setMaintenanceMessage(parsedSettings.message || "Проводятся технические работы. Личный кабинет временно недоступен.");
+            setMaintenanceMessage(parsedSettings.message || "проводятся технические работы. личный кабинет временно недоступен.");
           } catch (e) {
             console.error("Error parsing maintenance settings:", e);
           }
@@ -156,16 +156,16 @@ export default function SettingsPage() {
       if (error) throw error;
       
       toast({
-        title: "Настройки сохранены",
+        title: "настройки сохранены",
         description: maintenanceEnabled 
-          ? "Режим технических работ включен" 
-          : "Режим технических работ отключен",
+          ? "режим технических работ включен" 
+          : "режим технических работ отключен",
       });
     } catch (error) {
       console.error("Error saving maintenance settings:", error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить настройки режима тех.работ",
+        title: "ошибка",
+        description: "не удалось сохранить настройки режима тех.работ",
         variant: "destructive",
       });
     } finally {

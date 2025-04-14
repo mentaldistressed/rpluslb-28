@@ -21,24 +21,38 @@ export default function Sidebar() {
   const hasTicketAccess = !ticketId || userCanAccessTicket(ticketId);
   
   const navItems = [
-    {
-      name: "тикеты",
-      href: "/tickets",
-      icon: Ticket,
-      active: location.pathname.startsWith('/tickets')
-    },
-    {
-      name: "финансы",
-      href: "/finances",
-      icon: Landmark,
-      active: location.pathname.startsWith('/finances')
-    },
+    ...(isUser ? [
+      {
+        name: "мои тикеты",
+        href: "/tickets",
+        icon: Ticket,
+        active: location.pathname.startsWith('/tickets')
+      },
+      {
+        name: "мои финансы",
+        href: "/finances",
+        icon: Landmark,
+        active: location.pathname.startsWith('/finances')
+      }
+    ] : []),
     ...(isAdmin ? [
       {
-        name: "пользователи",
+        name: "управление тикетами",
+        href: "/tickets",
+        icon: Ticket,
+        active: location.pathname.startsWith('/tickets')
+      },
+      {
+        name: "управление пользователями",
         href: "/users",
         icon: Users,
         active: location.pathname.startsWith('/users')
+      },
+      {
+        name: "управление финансами",
+        href: "/finances",
+        icon: Landmark,
+        active: location.pathname.startsWith('/finances')
       },
       {
         name: "настройки",

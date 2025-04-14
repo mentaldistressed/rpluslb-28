@@ -14,7 +14,7 @@ interface MaintenanceSettings {
 }
 
 export default function MaintenancePage() {
-  const [message, setMessage] = useState("Проводятся технические работы. Личный кабинет временно недоступен.");
+  const [message, setMessage] = useState("проводятся технические работы. личный кабинет временно недоступен.");
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function MaintenancePage() {
 
         if (!error && data && data.value) {
           const settings = JSON.parse(data.value) as MaintenanceSettings;
-          setMessage(settings.message || "Проводятся технические работы. Личный кабинет временно недоступен.");
+          setMessage(settings.message || "проводятся технические работы. личный кабинет временно недоступен.");
           
           if (settings.endTime) {
             const parsedEndTime = new Date(settings.endTime);
@@ -81,7 +81,7 @@ export default function MaintenancePage() {
   }
 
   const handleCheckAvailability = () => {
-    window.location.replace('/login');
+    window.location.replace('/');
   };
 
   return (
@@ -97,7 +97,7 @@ export default function MaintenancePage() {
               технические работы
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-center space-y-6 pt-6">
+          <CardContent className="text-center space-y-2 pt-6">
             <p className="text-slate-700 leading-relaxed">{message}</p>
             
             {endTime && (
@@ -111,7 +111,7 @@ export default function MaintenancePage() {
                 </div>
                 
                 <div className="text-sm text-slate-600">
-                  планируемое окончание:<br />
+                  планируемое окончание технических работ:<br />
                   <span className="font-medium text-slate-700">{format(endTime, "dd.MM.yyyy HH:mm", { locale: ru })}</span>
                 </div>
               </div>
@@ -119,8 +119,8 @@ export default function MaintenancePage() {
             
             <div className="pt-4 border-t border-slate-100 text-sm text-slate-500 space-y-4">
               <div>
-                <p className="text-primary font-medium">© rplus</p>
-                <p>ЛКПО</p>
+                <p className="text-primary font-medium">ЛКПО</p>
+                <p>© rplus</p>
               </div>
               
               <Button
