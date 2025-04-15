@@ -43,6 +43,7 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
 
     console.log(`Attempting to send email to ${to} via ${SMTP_HOST}:${SMTP_PORT}`);
     
+    // Establish SMTP connection with debug mode enabled
     const client = new SMTPClient({
       connection: {
         hostname: SMTP_HOST,
@@ -56,14 +57,14 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       debug: true, // Enable debug logging
     });
 
-    // Правильно устанавливаем заголовки для кодировки
-    console.log("Attempting to send email with the following parameters:", {
+    // Add proper encoding information to ensure Cyrillic text renders correctly
+    console.log("Attempting to send email with UTF-8 encoding:", {
       from: FROM_EMAIL,
       to: to,
-      subject: subject,
-      contentType: "text/html; charset=utf-8"
+      subject: subject
     });
     
+    // Set content and headers properly for UTF-8 encoding
     const result = await client.send({
       from: FROM_EMAIL,
       to: to,
@@ -71,7 +72,8 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       content: "text/html",
       html: body,
       headers: {
-        "Content-Type": "text/html; charset=utf-8",
+        "Content-Type": "text/html; charset=UTF-8",
+        "Content-Transfer-Encoding": "base64"
       },
     });
 
