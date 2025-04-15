@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, ChevronDown } from "lucide-react";
+import { LogOut, UserCircle2, Bell, Menu } from "lucide-react";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -18,22 +18,25 @@ export default function Header() {
   if (!user) return null;
 
   return (
-    <header className="border-b shadow-sm bg-white sticky top-0 z-50">
+    <header className="border-b border-border/40 bg-white/80 backdrop-blur-md sticky top-0 z-50">
       <div className="h-16 flex items-center justify-between px-6">
         <div className="flex items-center space-x-2">
           <div className="text-xl font-medium">
-            <span className="font-bold tracking-tight">rplus</span>
+            <span className="font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">rplus</span>
             <span className="text-muted-foreground ml-2 text-base font-normal">ЛКПО</span>
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="text-muted-foreground">
+            <Bell className="h-5 w-5" />
+          </Button>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-9 px-2">
+              <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-full">
                 <UserAvatar user={user} size="sm" />
                 <span className="font-medium text-sm hidden sm:inline-block">{user.name}</span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>

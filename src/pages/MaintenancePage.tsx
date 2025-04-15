@@ -74,8 +74,13 @@ export default function MaintenancePage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-screen items-center justify-center bg-gradient-to-b from-background to-background/50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+          <span className="text-sm text-muted-foreground">загрузка...</span>
+        </div>
       </div>
     );
   }
@@ -85,39 +90,39 @@ export default function MaintenancePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/50 p-4">
       <div className="w-full max-w-md">
-        <div className="mx-auto bg-primary/10 p-5 rounded-full w-20 h-20 flex items-center justify-center mb-6 shadow-sm">
+        <div className="mx-auto bg-primary/10 p-5 rounded-full w-20 h-20 flex items-center justify-center mb-6">
           <Wrench className="h-8 w-8 text-primary" />
         </div>
         
-        <Card className="w-full max-w-md shadow-md border border-slate-200">
-          <CardHeader className="text-center pb-2 border-b border-slate-100">
-            <CardTitle className="text-2xl text-slate-800">
+        <Card className="card-shadow border-border/40 overflow-hidden">
+          <CardHeader className="text-center pb-4 border-b border-border/40 bg-secondary/30">
+            <CardTitle className="text-2xl font-medium">
               техническое обслуживание
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-center space-y-2 pt-6">
-            <p className="text-slate-700 leading-relaxed">{message}</p>
+          <CardContent className="text-center space-y-4 pt-6">
+            <p className="text-foreground leading-relaxed">{message}</p>
             
             {endTime && (
               <div className="space-y-4 py-2">
-                <div className="w-full bg-slate-100 rounded-lg p-4">
-                  <div className="flex items-center justify-center gap-2 text-sm text-slate-700 font-medium mb-2">
+                <div className="w-full bg-secondary/50 rounded-lg p-4">
+                  <div className="flex items-center justify-center gap-2 text-sm text-foreground/80 font-medium mb-2">
                     <Clock className="h-4 w-4" />
                     <span>примерное время ожидания:</span>
                   </div>
-                  <div className="text-xl font-bold text-slate-800">{timeRemaining}</div>
+                  <div className="text-xl font-bold text-foreground">{timeRemaining}</div>
                 </div>
                 
-                <div className="text-sm text-slate-600">
+                <div className="text-sm text-muted-foreground">
                   планируемое окончание технических работ:<br />
-                  <span className="font-medium text-slate-700">{format(endTime, "dd.MM.yyyy HH:mm", { locale: ru })}</span>
+                  <span className="font-medium text-foreground/80">{format(endTime, "dd.MM.yyyy HH:mm", { locale: ru })}</span>
                 </div>
               </div>
             )}
             
-            <div className="pt-4 border-t border-slate-100 text-sm text-slate-500 space-y-4">
+            <div className="pt-6 border-t border-border/40 text-sm text-muted-foreground space-y-4">
               <div>
                 <p className="text-primary font-medium">ЛКПО</p>
                 <p>© rplus</p>

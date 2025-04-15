@@ -16,6 +16,8 @@ import NotFoundPage from "@/pages/NotFoundPage";
 import FinancesPage from "@/pages/FinancesPage";
 import MaintenancePage from "@/pages/MaintenancePage";
 import ReleasesPage from "@/pages/ReleasesPage";
+import DashboardPage from "@/pages/DashboardPage";
+import Index from "@/pages/Index";
 
 // Import Russian locale for date-fns
 import { ru } from "date-fns/locale";
@@ -26,7 +28,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">загрузка...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-b from-background to-background/50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
+            <div className="h-6 w-6 border-t-2 border-primary animate-spin rounded-full" />
+          </div>
+          <span className="text-sm text-muted-foreground">загрузка...</span>
+        </div>
+      </div>
+    );
   }
   
   if (!user) {
@@ -40,11 +51,20 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">загрузка...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-b from-background to-background/50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
+            <div className="h-6 w-6 border-t-2 border-primary animate-spin rounded-full" />
+          </div>
+          <span className="text-sm text-muted-foreground">загрузка...</span>
+        </div>
+      </div>
+    );
   }
   
   if (!user || user.role !== 'admin') {
-    return <Navigate to="/tickets" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <>{children}</>;
@@ -58,10 +78,18 @@ const App = () => (
           <MainLayout>
             <Routes>
               {/* Public routes */}
+              <Route path="/" element={<Index />} />
               <Route path="/login" element={<LoginPage />} />
               
               {/* Protected routes */}
-              <Route path="/" element={<Navigate to="/tickets" replace />} />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                } 
+              />
               
               <Route 
                 path="/tickets" 

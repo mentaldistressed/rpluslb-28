@@ -2,7 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useTickets } from "@/contexts/TicketsContext";
 import { Button } from "@/components/ui/button";
-import { Ticket, Users, Plus, Settings, Landmark, Library } from "lucide-react";
+import { Ticket, Users, Plus, Settings, Landmark, Library, Home } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +21,12 @@ export default function Sidebar() {
   
   const navItems = [
     ...(isUser ? [
+      {
+        name: "главная",
+        href: "/dashboard",
+        icon: Home,
+        active: location.pathname === '/dashboard'
+      },
       {
         name: "мой каталог",
         href: "/releases",
@@ -41,6 +47,12 @@ export default function Sidebar() {
       }
     ] : []),
     ...(isAdmin ? [
+      {
+        name: "панель управления",
+        href: "/dashboard",
+        icon: Home,
+        active: location.pathname === '/dashboard'
+      },
       {
         name: "управление каталогом",
         href: "/releases",
@@ -75,37 +87,37 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-card border-r shadow-sm min-h-[calc(100vh-4rem)] flex flex-col p-4">
+    <div className="w-64 bg-white border-r border-border/40 shadow-sm min-h-[calc(100vh-4rem)] flex flex-col p-4">
       <div className="flex-1 space-y-6">
         {isUser && (
           <Link to="/tickets/new">
             <Button className="w-full justify-start font-medium shadow-sm" variant="default">
               <Plus className="mr-2 h-4 w-4" />
-              <span>создать новый тикет</span>
+              <span>создать тикет</span>
             </Button>
           </Link>
         )}
         
-        <nav className="space-y-1.5">
+        <nav className="space-y-1">
           {navItems.map((item) => (
             <Link
               key={item.href}
               to={item.href}
               className={cn(
-                "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                "flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors",
                 item.active
-                  ? "bg-accent text-accent-foreground shadow-sm"
-                  : "text-foreground hover:bg-secondary"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-foreground/80 hover:bg-secondary hover:text-foreground"
               )}
             >
-              <item.icon className="mr-3 h-5 w-5" />
+              <item.icon className="mr-2.5 h-4 w-4" />
               {item.name}
             </Link>
           ))}
         </nav>
       </div>
       
-      <div className="mt-auto pt-4 border-t text-xs text-muted-foreground px-3">
+      <div className="mt-auto pt-4 border-t border-border/50 text-xs text-muted-foreground px-3">
         <p>© {new Date().getFullYear()} rplus</p>
         <p>ЛКПО, разработано @amirknyazev</p>
       </div>

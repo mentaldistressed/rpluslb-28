@@ -36,9 +36,9 @@ export function UserAvatar({ user, size = "md", className }: UserAvatarProps) {
   };
 
   return (
-    <Avatar className={cn(sizeClasses[size], className)}>
+    <Avatar className={cn(sizeClasses[size], className, "ring-2 ring-white/80")}>
       <AvatarImage src={user.avatar} alt={user.name} />
-      <AvatarFallback className={cn("bg-accent text-accent-foreground font-medium", getFallbackColor(user.name))}>
+      <AvatarFallback className={cn("bg-primary/10 text-primary font-medium rounded-full", getFallbackColor(user.name))}>
         {getInitials(user.name)}
       </AvatarFallback>
     </Avatar>

@@ -3,9 +3,11 @@ import { AlertCircle } from "lucide-react";
 
 export const TicketClosedNotice = () => {
   return (
-    <div className="p-6 border rounded-lg bg-muted/50 text-center space-y-3 shadow-sm">
+    <div className="p-6 rounded-xl bg-secondary/70 text-center space-y-3 border border-border/50 card-shadow">
       <div className="flex justify-center">
-        <AlertCircle className="h-8 w-8 text-slate-400" />
+        <div className="bg-secondary/90 h-12 w-12 rounded-full flex items-center justify-center">
+          <AlertCircle className="h-6 w-6 text-muted-foreground" />
+        </div>
       </div>
       <h3 className="font-medium text-lg">тикет закрыт</h3>
       <p className="text-muted-foreground max-w-md mx-auto">
