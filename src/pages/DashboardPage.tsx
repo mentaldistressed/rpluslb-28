@@ -261,7 +261,7 @@ export default function DashboardPage() {
                   <div className="bg-card dark:bg-card p-4 rounded-lg shadow-sm relative overflow-hidden transition-colors duration-200">
                     <div className="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-black/30 z-10 flex flex-col items-center justify-center">
                       <Lock className="h-8 w-8 text-blue-400 dark:text-blue-300 mb-1" />
-                      <p className="text-sm text-blue-800 dark:text-blue-300">Недоступно</p>
+                      <p className="text-sm text-blue-800 dark:text-blue-300">недоступно</p>
                     </div>
                     <p className="text-muted-foreground text-sm mb-1">активных</p>
                     <p className="text-2xl font-medium">{userStats.activeCount}</p>
