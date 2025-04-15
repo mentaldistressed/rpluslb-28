@@ -8,13 +8,17 @@ interface RatingStarsProps {
   disabled?: boolean;
   initialRating?: number;
   size?: "sm" | "md" | "lg";
+  readOnly?: boolean;
+  className?: string;
 }
 
 export const RatingStars = ({ 
   onChange, 
   disabled = false, 
   initialRating = 0,
-  size = "md"
+  size = "md",
+  readOnly = false,
+  className
 }: RatingStarsProps) => {
   const [rating, setRating] = useState(initialRating);
   const [hover, setHover] = useState(0);
@@ -26,25 +30,26 @@ export const RatingStars = ({
   };
 
   const handleClick = (value: number) => {
-    if (disabled) return;
+    if (disabled || readOnly) return;
     setRating(value);
     onChange?.(value);
   };
 
   return (
-    <div className="flex gap-1">
+    <div className={cn("flex gap-1", className)}>
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
           type="button"
           onClick={() => handleClick(star)}
-          onMouseEnter={() => !disabled && setHover(star)}
-          onMouseLeave={() => !disabled && setHover(0)}
+          onMouseEnter={() => !disabled && !readOnly && setHover(star)}
+          onMouseLeave={() => !disabled && !readOnly && setHover(0)}
           className={cn(
             "transition-colors duration-200",
-            disabled ? "cursor-default" : "cursor-pointer hover:scale-110"
+            disabled || readOnly ? "cursor-default" : "cursor-pointer hover:scale-110"
           )}
-          disabled={disabled}
+          disabled={disabled || readOnly}
+          aria-label={`Rate ${star} out of 5 stars`}
         >
           <Star
             className={cn(

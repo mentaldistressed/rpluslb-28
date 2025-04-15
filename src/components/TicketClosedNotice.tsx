@@ -15,9 +15,11 @@ export const TicketClosedNotice = ({ ticketId }: { ticketId: string }) => {
 
   // Check if user has already rated this ticket
   useEffect(() => {
-    if (!user || user.role !== 'sublabel') return;
+    if (!user) return;
 
     const checkExistingRating = async () => {
+      // Instead of looking for a message, check for a rating in the ticket_ratings table
+      // This is a simulated check since we don't have the table yet
       const { data } = await supabase
         .from('messages')
         .select('content')
@@ -28,6 +30,11 @@ export const TicketClosedNotice = ({ ticketId }: { ticketId: string }) => {
 
       if (data) {
         setHasRated(true);
+        // Extract rating value if available
+        const ratingMatch = data.content.match(/RATING: (\d+)/);
+        if (ratingMatch && ratingMatch[1]) {
+          setRating(parseInt(ratingMatch[1], 10));
+        }
       }
     };
 
@@ -64,6 +71,23 @@ export const TicketClosedNotice = ({ ticketId }: { ticketId: string }) => {
     }
   };
 
+  // Only show rating UI for sublabel users
+  if (user?.role !== 'sublabel') {
+    return (
+      <div className="p-6 rounded-xl bg-secondary/70 text-center space-y-4 border border-border/50 card-shadow">
+        <div className="flex justify-center">
+          <div className="bg-secondary/90 h-12 w-12 rounded-full flex items-center justify-center">
+            <AlertCircle className="h-6 w-6 text-muted-foreground" />
+          </div>
+        </div>
+        <h3 className="font-medium text-lg">тикет закрыт</h3>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          этот тикет был закрыт. больше Вы не можете отправлять в него новые сообщения
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 rounded-xl bg-secondary/70 text-center space-y-4 border border-border/50 card-shadow">
       <div className="flex justify-center">
@@ -76,7 +100,7 @@ export const TicketClosedNotice = ({ ticketId }: { ticketId: string }) => {
         этот тикет был закрыт. больше Вы не можете отправлять в него новые сообщения
       </p>
       
-      {!hasRated && user?.role === 'sublabel' && (
+      {!hasRated && (
         <div className="pt-2 space-y-3 max-w-sm mx-auto">
           <div className="h-px bg-border/50" />
           <p className="text-sm text-muted-foreground">оцените, пожалуйста, качество решения вопроса</p>
@@ -101,6 +125,11 @@ export const TicketClosedNotice = ({ ticketId }: { ticketId: string }) => {
         <div className="pt-2 space-y-2">
           <div className="h-px bg-border/50" />
           <p className="text-sm text-primary">спасибо за вашу оценку!</p>
+          {rating && (
+            <div className="flex justify-center mt-2">
+              <RatingStars initialRating={rating} readOnly size="md" />
+            </div>
+          )}
         </div>
       )}
     </div>

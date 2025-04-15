@@ -19,6 +19,7 @@ import { ArrowLeft, Send, RefreshCw, Clock, MessageSquare, ChevronDown, ChevronU
 import { TicketStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { TicketClosedNotice } from "@/components/TicketClosedNotice";
+import { RatingStars } from "@/components/RatingStars";
 
 export default function TicketDetailPage() {
   const { ticketId } = useParams<{ ticketId: string }>();
@@ -279,6 +280,41 @@ export default function TicketDetailPage() {
                       const messageUser = getUserById(message.userId);
                       if (!messageUser) return null;
                       
+                      if (message.content.startsWith('RATING:') && (user.role !== 'admin' || messageUser.id === user.id)) {
+                        return null;
+                      }
+                      
+                      if (message.content.startsWith('RATING:') && user.role === 'admin') {
+                        const ratingMatch = message.content.match(/RATING: (\d+)/);
+                        const ratingValue = ratingMatch && ratingMatch[1] ? parseInt(ratingMatch[1], 10) : 0;
+                        const messageTime = format(new Date(message.createdAt), "dd.MM HH:mm");
+                        
+                        return (
+                          <div key={message.id} className="flex justify-start">
+                            <div className="flex gap-3 max-w-[85%]">
+                              <div className="flex-shrink-0 pt-1">
+                                <UserAvatar user={messageUser} />
+                              </div>
+                              <div>
+                                <div className="mb-1 flex items-center gap-2">
+                                  <div className="font-medium text-sm">{messageUser.name}</div>
+                                  <div className="text-xs text-muted-foreground">{messageTime}</div>
+                                </div>
+                                <div className="p-3 rounded-lg bg-blue-500 text-white">
+                                  <div className="flex items-center gap-2">
+                                    <span>RATING:</span>
+                                    <span className="font-bold">{ratingValue}</span>
+                                  </div>
+                                  <div className="mt-1">
+                                    <RatingStars initialRating={ratingValue} readOnly size="sm" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      
                       const isCreator = messageUser.id === creator?.id;
                       const isCurrentUser = messageUser.id === user.id;
                       const messageTime = format(new Date(message.createdAt), "dd.MM HH:mm");
@@ -331,61 +367,61 @@ export default function TicketDetailPage() {
               </div>
               
               <div className="p-3 border-t">
-                {ticket.status === 'closed' && (
+                {ticket.status === 'closed' ? (
                   <TicketClosedNotice ticketId={ticket.id} />
-                )}
-                
-                <form onSubmit={handleSendMessage} className="relative">
-                  <Textarea
-                    ref={textareaRef}
-                    value={newMessage}
-                    onChange={(e) => {
-                      setNewMessage(e.target.value);
-                      if (e.target.value.length > 0) {
-                        setShowKeyboardHint(false);
-                      } else {
-                        setShowKeyboardHint(true);
-                      }
-                    }}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => setShowKeyboardHint(true)}
-                    onBlur={() => setShowKeyboardHint(false)}
-                    placeholder="введите Ваше сообщение..."
-                    className="mb-2 resize-none min-h-[100px]"
-                    rows={3}
-                  />
-                  
-                  {showKeyboardHint && (
-                    <div className="absolute bottom-[60px] right-0 bg-background border shadow-sm rounded-md py-1 px-2 text-xs text-muted-foreground flex items-center gap-1 mr-3">
-                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Shift</kbd>
-                      <span>+</span>
-                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Enter</kbd>
-                      <span className="mx-1">для новой строки</span>
-                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium ml-1">Enter</kbd>
-                      <span className="mx-1">для отправки</span>
+                ) : (
+                  <form onSubmit={handleSendMessage} className="relative">
+                    <Textarea
+                      ref={textareaRef}
+                      value={newMessage}
+                      onChange={(e) => {
+                        setNewMessage(e.target.value);
+                        if (e.target.value.length > 0) {
+                          setShowKeyboardHint(false);
+                        } else {
+                          setShowKeyboardHint(true);
+                        }
+                      }}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => setShowKeyboardHint(true)}
+                      onBlur={() => setShowKeyboardHint(false)}
+                      placeholder="введите Ваше сообщение..."
+                      className="mb-2 resize-none min-h-[100px]"
+                      rows={3}
+                    />
+                    
+                    {showKeyboardHint && (
+                      <div className="absolute bottom-[60px] right-0 bg-background border shadow-sm rounded-md py-1 px-2 text-xs text-muted-foreground flex items-center gap-1 mr-3">
+                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Shift</kbd>
+                        <span>+</span>
+                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Enter</kbd>
+                        <span className="mx-1">для новой строки</span>
+                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium ml-1">Enter</kbd>
+                        <span className="mx-1">для отправки</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-end">
+                      <Button 
+                        type="submit" 
+                        disabled={isLoading || isSending || !newMessage.trim()}
+                        className="gap-2"
+                      >
+                        {isLoading || isSending ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                            отправка...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4" />
+                            отправить
+                          </>
+                        )}
+                      </Button>
                     </div>
-                  )}
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      type="submit" 
-                      disabled={isLoading || isSending || !newMessage.trim()}
-                      className="gap-2"
-                    >
-                      {isLoading || isSending ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          отправка...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4" />
-                          отправить
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
+                  </form>
+                )}
               </div>
             </div>
           </div>
