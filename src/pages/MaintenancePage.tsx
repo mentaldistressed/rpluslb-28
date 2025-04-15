@@ -6,6 +6,7 @@ import { Loader2, Wrench, Clock, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, formatDistance } from "date-fns";
 import { ru } from "date-fns/locale";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface MaintenanceSettings {
   enabled: boolean;
@@ -91,6 +92,9 @@ export default function MaintenancePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/50 p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md">
         <div className="mx-auto bg-primary/10 p-5 rounded-full w-20 h-20 flex items-center justify-center mb-6">
           <Wrench className="h-8 w-8 text-primary" />
