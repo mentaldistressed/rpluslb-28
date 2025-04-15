@@ -40,7 +40,7 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     ticketStatus?: string
   ) => {
     try {
-      const { data, error } = await supabase.functions.invoke('send-email', {
+      const { data, error } = await supabase.functions.invoke('send-email1', {
         body: {
           to: recipientEmail,
           subject,
