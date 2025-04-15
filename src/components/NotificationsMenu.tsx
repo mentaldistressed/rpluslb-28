@@ -1,5 +1,4 @@
-
-import { Bell } from "lucide-react";
+import { Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface Notification {
   id: string;
@@ -30,6 +30,41 @@ export function NotificationsMenu() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { user } = useAuth();
   
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId);
+        
+      if (error) throw error;
+      
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      toast.error('Не удалось пометить уведомление как прочитанное');
+    }
+  };
+  
+  const markAllAsRead = async () => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', user?.id);
+        
+      if (error) throw error;
+      
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      toast.success('Все уведомления помечены как прочитанные');
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      toast.error('Не удалось пометить уведомления как прочитанные');
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
     
@@ -140,6 +175,25 @@ export function NotificationsMenu() {
     
     fetchNotifications();
     
+    // Update each notification to include read status from database
+    const { data: dbNotifications } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (dbNotifications) {
+      setNotifications(dbNotifications.map(n => ({
+        id: n.id,
+        ticketId: n.ticket_id,
+        content: n.content,
+        createdAt: n.created_at,
+        read: n.read,
+        type: n.type,
+        ticketTitle: n.ticket_title
+      })));
+    }
+
     // Subscribe to realtime updates
     const channel = supabase
       .channel('notifications')
@@ -226,12 +280,6 @@ export function NotificationsMenu() {
 
   const hasUnread = notifications.some(n => !n.read);
   
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.filter(n => n.id !== notificationId)
-    );
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -243,7 +291,19 @@ export function NotificationsMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80" align="end" forceMount>
-        <DropdownMenuLabel>уведомления</DropdownMenuLabel>
+        <div className="flex items-center justify-between px-2 py-1.5">
+          <DropdownMenuLabel>уведомления</DropdownMenuLabel>
+          {notifications.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={markAllAsRead}
+              className="text-xs"
+            >
+              пометить все как прочитанные
+            </Button>
+          )}
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
           {notifications.length === 0 ? (
@@ -251,25 +311,38 @@ export function NotificationsMenu() {
               нет новых уведомлений
             </div>
           ) : (
-            notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            notifications
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
               .map((notification) => (
-                <DropdownMenuItem key={notification.id} asChild>
-                  <Link 
-                    to={`/tickets/${notification.ticketId}`}
-                    className="cursor-pointer"
-                    onClick={() => markAsRead(notification.id)}
-                  >
-                    <div className="flex flex-col gap-1 w-full p-1">
-                      <p className="text-sm font-medium">
-                        {notification.ticketTitle || 'Тикет'}
-                      </p>
-                      <p className="text-sm">{notification.content}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(notification.createdAt), "dd.MM.yyyy HH:mm")}
-                      </p>
-                    </div>
-                  </Link>
-                </DropdownMenuItem>
+                <div key={notification.id} className="flex items-center gap-2 px-2">
+                  <DropdownMenuItem asChild className="flex-1">
+                    <Link 
+                      to={`/tickets/${notification.ticketId}`}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex flex-col gap-1 w-full p-1">
+                        <p className="text-sm font-medium">
+                          {notification.ticketTitle || 'Тикет'}
+                        </p>
+                        <p className="text-sm">{notification.content}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(notification.createdAt), "dd.MM.yyyy HH:mm")}
+                        </p>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                  {!notification.read && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      <Check className="h-4 w-4" />
+                      <span className="sr-only">Пометить как прочитанное</span>
+                    </Button>
+                  )}
+                </div>
               ))
           )}
         </DropdownMenuGroup>
