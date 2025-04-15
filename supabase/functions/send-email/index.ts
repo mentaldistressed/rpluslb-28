@@ -56,7 +56,7 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       debug: true, // Enable debug logging
     });
 
-    // Send the email with more detailed logging and correct encoding headers
+    // Правильно устанавливаем заголовки для кодировки
     console.log("Attempting to send email with the following parameters:", {
       from: FROM_EMAIL,
       to: to,
@@ -68,8 +68,11 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       from: FROM_EMAIL,
       to: to,
       subject: subject,
-      content: "text/html; charset=utf-8",
+      content: "text/html",
       html: body,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+      },
     });
 
     console.log("Email sent successfully, result:", result);
@@ -95,20 +98,24 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
 const trackNotificationEvent = async (supabase: any, data: EmailPayload) => {
   const { to, subject, ticketId, messageId, userId, ticketStatus } = data;
   
-  const { error } = await supabase
-    .from('notification_events')
-    .insert({
-      to_email: to,
-      subject,
-      ticket_id: ticketId,
-      message_id: messageId,
-      user_id: userId,
-      ticket_status: ticketStatus,
-      sent_at: new Date().toISOString()
-    });
-    
-  if (error) {
-    console.error("Error tracking notification event:", error);
+  try {
+    const { error } = await supabase
+      .from('notification_events')
+      .insert({
+        to_email: to,
+        subject,
+        ticket_id: ticketId,
+        message_id: messageId,
+        user_id: userId,
+        ticket_status: ticketStatus,
+        sent_at: new Date().toISOString()
+      });
+      
+    if (error) {
+      console.error("Error tracking notification event:", error);
+    }
+  } catch (err) {
+    console.error("Error tracking notification event:", err);
   }
 };
 
