@@ -59,7 +59,7 @@ export const TicketClosedNotice = ({ ticketId }: { ticketId: string }) => {
       setHasRated(true);
       toast({
         title: "спасибо за оценку",
-        description: "ваш отзыв важен для нас"
+        description: "ваша оценка важна для нас"
       });
     } catch (error) {
       console.error("Error submitting rating:", error);

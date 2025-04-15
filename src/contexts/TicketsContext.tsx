@@ -38,7 +38,7 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     ticketStatus?: string
   ) => {
     try {
-      const { data, error } = await supabase.functions.invoke('send-email', {
+      const { data, error } = await supabase.functions.invoke('asdfjsdgfjhasdjajksdf', {
         body: {
           to: recipientEmail,
           subject,
@@ -51,14 +51,14 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        console.error("Ошибка отправки уведомления:", error);
+        // console.error("Ошибка отправки уведомления:", error);
         return false;
       }
 
       console.log("Уведомление успешно отправлено:", data);
       return true;
     } catch (error) {
-      console.error("Ошибка вызова функции отправки уведомления:", error);
+      // console.error("Ошибка вызова функции отправки уведомления:", error);
       return false;
     }
   };
@@ -239,11 +239,11 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
               // Add a special message to trigger notification
               await supabase
                 .from('messages')
-                .insert({
-                  ticket_id: updatedTicket.id,
-                  user_id: user.id,
-                  content: 'RATING_REQUEST'
-                });
+                // .insert({
+                //   ticket_id: updatedTicket.id,
+                //   user_id: user.id,
+                //   content: 'RATING_REQUEST'
+                // });
                 
               toast({
                 title: "тикет закрыт",

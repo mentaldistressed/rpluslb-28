@@ -40,10 +40,10 @@ export function NotificationsMenu() {
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
       );
       
-      toast.success('Уведомление помечено как прочитанное');
+      toast.success('уведомление помечено как прочитанное');
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      toast.error('Не удалось пометить уведомление как прочитанное');
+      toast.error('не удалось пометить уведомление как прочитанное');
     }
   };
   
@@ -51,10 +51,10 @@ export function NotificationsMenu() {
     try {
       // Since we don't have a notifications table yet, we're updating our local state
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      toast.success('Все уведомления помечены как прочитанные');
+      toast.success('все уведомления помечены как прочитанные');
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
-      toast.error('Не удалось пометить уведомления как прочитанные');
+      toast.error('не удалось пометить уведомления как прочитанные');
     }
   };
 
@@ -99,7 +99,7 @@ export function NotificationsMenu() {
             id: `rating-${ticket.id}`,
             ticketId: ticket.id,
             ticketTitle: ticket.title,
-            content: "Тикет закрыт. Пожалуйста, оцените качество решения вопроса",
+            content: "тикет закрыт. пожалуйста, оцените качество решения вопроса",
             createdAt: ticket.updated_at,
             read: false,
             type: 'rating_request'
@@ -113,7 +113,7 @@ export function NotificationsMenu() {
           const messageNotifications: Notification[] = messages.map(message => ({
             id: message.id,
             ticketId: message.ticket_id,
-            content: "Новое сообщение в вашем тикете",
+            content: "новое сообщение в вашем тикете",
             createdAt: message.created_at,
             read: false,
             type: 'new_message'
@@ -143,7 +143,7 @@ export function NotificationsMenu() {
               id: message.id,
               ticketId: message.ticket_id,
               ticketTitle: message.tickets?.title,
-              content: "Новое сообщение в тикете",
+              content: "новое сообщение в тикете",
               createdAt: message.created_at,
               read: false,
               type: 'new_message'
@@ -157,7 +157,7 @@ export function NotificationsMenu() {
             id: `new-ticket-${ticket.id}`,
             ticketId: ticket.id,
             ticketTitle: ticket.title,
-            content: "Создан новый тикет",
+            content: "создан новый тикет",
             createdAt: ticket.created_at,
             read: false,
             type: 'new_ticket'
@@ -199,7 +199,7 @@ export function NotificationsMenu() {
             setNotifications(prev => [{
               id: newMessage.id,
               ticketId: newMessage.ticket_id,
-              content: "Новое сообщение в вашем тикете",
+              content: "новое сообщение в вашем тикете",
               createdAt: newMessage.created_at,
               read: false,
               type: 'new_message'
@@ -209,7 +209,7 @@ export function NotificationsMenu() {
           setNotifications(prev => [{
             id: newMessage.id,
             ticketId: newMessage.ticket_id,
-            content: "Новое сообщение в тикете",
+            content: "новое сообщение в тикете",
             createdAt: newMessage.created_at,
             read: false,
             type: 'new_message'
@@ -228,7 +228,7 @@ export function NotificationsMenu() {
             id: `new-ticket-${newTicket.id}`,
             ticketId: newTicket.id,
             ticketTitle: newTicket.title,
-            content: "Создан новый тикет",
+            content: "создан новый тикет",
             createdAt: newTicket.created_at,
             read: false,
             type: 'new_ticket'
@@ -249,7 +249,7 @@ export function NotificationsMenu() {
               id: `status-${updatedTicket.id}-${Date.now()}`,
               ticketId: updatedTicket.id,
               ticketTitle: updatedTicket.title,
-              content: `Статус тикета изменен на: ${
+              content: `статус тикета изменен на: ${
                 updatedTicket.status === 'open' ? 'открыт' :
                 updatedTicket.status === 'in-progress' ? 'в обработке' : 'закрыт'
               }`,
@@ -307,7 +307,7 @@ export function NotificationsMenu() {
       <DropdownMenuContent className="w-96" align="end" forceMount>
         <div className="flex items-center justify-between px-4 py-2">
           <DropdownMenuLabel className="text-base font-semibold">
-            Уведомления
+            уведомления
           </DropdownMenuLabel>
           {notifications.length > 0 && (
             <Button 
@@ -317,7 +317,7 @@ export function NotificationsMenu() {
               className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
             >
               <CheckCircle className="h-4 w-4" />
-              Все прочитаны
+              все прочитаны
             </Button>
           )}
         </div>
@@ -326,7 +326,7 @@ export function NotificationsMenu() {
           <DropdownMenuGroup className="p-2">
             {notifications.length === 0 ? (
               <div className="p-4 text-sm text-center text-muted-foreground">
-                Нет новых уведомлений
+                нет новых уведомлений
               </div>
             ) : (
               notifications
@@ -363,7 +363,7 @@ export function NotificationsMenu() {
                             }}
                           >
                             <CheckCircle className="h-4 w-4" />
-                            <span className="sr-only">Пометить как прочитанное</span>
+                            <span className="sr-only">пометить как прочитанное</span>
                           </Button>
                         )}
                       </Link>

@@ -95,8 +95,8 @@ export default function DashboardPage() {
               const isYesterday = date.toDateString() === yesterday.toDateString();
               
               const displayDate = isToday 
-                ? 'Сегодня' 
-                : (isYesterday ? 'Вчера' : date.toLocaleDateString('ru-RU'));
+                ? 'сегодня' 
+                : (isYesterday ? 'вчера' : date.toLocaleDateString('ru-RU'));
               
               const displayTime = date.toLocaleTimeString('ru-RU', { 
                 hour: '2-digit', 
@@ -135,13 +135,13 @@ export default function DashboardPage() {
   const getActivityText = (activity: ActivityItem) => {
     switch (activity.type) {
       case 'create':
-        return `Создан новый тикет #${activity.ticketId.substring(0, 4)}`;
+        return `создан новый тикет #${activity.ticketId.substring(0, 4)}`;
       case 'update':
-        return `Обновлен тикет #${activity.ticketId.substring(0, 4)}`;
+        return `обновлен тикет #${activity.ticketId.substring(0, 4)}`;
       case 'close':
-        return `Закрыт тикет #${activity.ticketId.substring(0, 4)}`;
+        return `закрыт тикет #${activity.ticketId.substring(0, 4)}`;
       default:
-        return `Действие с тикетом #${activity.ticketId.substring(0, 4)}`;
+        return `действие с тикетом #${activity.ticketId.substring(0, 4)}`;
     }
   };
   
@@ -214,7 +214,12 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="card-shadow border-border/40 transition-colors duration-200">
+            <Card className="card-shadow border-border/40 relative overflow-hidden transition-colors duration-200">
+              <div className="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-black/30 z-10 flex flex-col items-center justify-center">
+                <Lock className="h-10 w-10 text-blue-400 dark:text-blue-300 mb-2" />
+                <p className="text-lg font-medium text-blue-800 dark:text-blue-300">недоступно</p>
+                <p className="text-sm text-blue-600 dark:text-blue-400">функционал в разработке</p>
+              </div>
               <CardHeader className="pb-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                   <Landmark className="h-5 w-5 text-primary" />
