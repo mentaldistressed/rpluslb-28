@@ -11,6 +11,7 @@ export interface User {
 
 export type TicketStatus = 'open' | 'in-progress' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high';
+export type ActivityType = 'update' | 'create' | 'close';
 
 export interface Ticket {
   id: string;
@@ -30,4 +31,13 @@ export interface Message {
   content: string;
   createdAt: string;
   userId: string;
+}
+
+export interface ActivityItem {
+  id: string;
+  type: ActivityType;
+  ticketId: string;
+  timestamp: string;
+  date: string;
+  time: string;
 }

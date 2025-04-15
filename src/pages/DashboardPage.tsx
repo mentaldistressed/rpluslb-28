@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Ticket, FileText, Landmark, CircleUserRound, Clock, ChevronRight, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { ActivityItem, ActivityType } from "@/types";
 
 interface TicketStats {
   activeCount: number;
@@ -14,15 +14,6 @@ interface TicketStats {
 interface UserStats {
   totalCount: number;
   activeCount: number;
-}
-
-interface ActivityItem {
-  id: string;
-  type: 'update' | 'create' | 'close';
-  ticketId: string;
-  timestamp: string;
-  date: string;
-  time: string;
 }
 
 export default function DashboardPage() {
@@ -91,7 +82,8 @@ export default function DashboardPage() {
               const isNew = new Date(ticket.created_at).getTime() === new Date(ticket.updated_at).getTime();
               const isClosed = ticket.status === 'closed';
               
-              const type = isNew ? 'create' : (isClosed ? 'close' : 'update');
+              // Ensure we use the correct type literals that match ActivityType
+              const type: ActivityType = isNew ? 'create' : (isClosed ? 'close' : 'update');
               const date = new Date(ticket.updated_at);
               
               // Format date for display
