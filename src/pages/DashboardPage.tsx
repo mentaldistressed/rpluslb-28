@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Ticket, FileText, Landmark, CircleUserRound, Clock, ChevronRight, TrendingUp } from "lucide-react";
+import { Ticket, FileText, Landmark, CircleUserRound, Clock, ChevronRight, TrendingUp, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ActivityItem, ActivityType } from "@/types";
@@ -47,19 +47,16 @@ export default function DashboardPage() {
         
         // Get user statistics (admin only)
         if (user.role === 'admin') {
+          // Count only sublabel users
           const { count: totalUsers, error: userErr } = await supabase
             .from('profiles')
-            .select('id', { count: 'exact' });
-          
-          const { count: activeUsers, error: activeErr } = await supabase
-            .from('profiles')
             .select('id', { count: 'exact' })
-            .not('last_activity', 'is', null);
+            .eq('role', 'sublabel');
           
-          if (!userErr && !activeErr) {
+          if (!userErr) {
             setUserStats({
               totalCount: totalUsers || 0,
-              activeCount: activeUsers || 0
+              activeCount: 0 // We'll show this as unavailable
             });
           }
         }
@@ -186,7 +183,12 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="card-shadow border-border/40">
+            <Card className="card-shadow border-border/40 relative overflow-hidden">
+              <div className="absolute inset-0 backdrop-blur-sm bg-white/30 z-10 flex flex-col items-center justify-center">
+                <Lock className="h-10 w-10 text-blue-400 mb-2" />
+                <p className="text-lg font-medium text-blue-800">Недоступно</p>
+                <p className="text-sm text-blue-600">Функционал в разработке</p>
+              </div>
               <CardHeader className="pb-2">
                 <div className="w-10 h-10 rounded-lg bg-accent/40 flex items-center justify-center mb-2">
                   <FileText className="h-5 w-5 text-accent-foreground" />
@@ -249,7 +251,11 @@ export default function DashboardPage() {
                     <p className="text-muted-foreground text-sm mb-1">всего пользователей</p>
                     <p className="text-2xl font-medium">{userStats.totalCount}</p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <div className="bg-white p-4 rounded-lg shadow-sm relative overflow-hidden">
+                    <div className="absolute inset-0 backdrop-blur-sm bg-white/30 z-10 flex flex-col items-center justify-center">
+                      <Lock className="h-8 w-8 text-blue-400 mb-1" />
+                      <p className="text-sm text-blue-800">Недоступно</p>
+                    </div>
                     <p className="text-muted-foreground text-sm mb-1">активных</p>
                     <p className="text-2xl font-medium">{userStats.activeCount}</p>
                   </div>
@@ -271,8 +277,10 @@ export default function DashboardPage() {
                   <div className="space-y-3">
                     {activities.map((activity, index) => (
                       <div key={activity.id} className={index < activities.length - 1 ? "border-b pb-3 border-border/40" : ""}>
-                        <p className="text-sm font-medium">{getActivityText(activity)}</p>
-                        <p className="text-xs text-muted-foreground">{activity.date}, {activity.time}</p>
+                        <Link to={`/tickets/${activity.ticketId}`} className="hover:underline">
+                          <p className="text-sm font-medium">{getActivityText(activity)}</p>
+                          <p className="text-xs text-muted-foreground">{activity.date}, {activity.time}</p>
+                        </Link>
                       </div>
                     ))}
                   </div>

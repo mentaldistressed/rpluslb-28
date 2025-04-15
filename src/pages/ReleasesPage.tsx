@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, PackageX, Bell } from "lucide-react";
+import { Clock, PackageX, Bell, FileText, Lock } from "lucide-react";
 
 export default function ReleasesPage() {
   const { user } = useAuth();
@@ -57,6 +57,32 @@ export default function ReleasesPage() {
                 Каталог релизов будет доступен в ближайшем обновлении системы
               </p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Stats card with blur effect */}
+      <Card className="border-border/40 relative overflow-hidden">
+        <div className="absolute inset-0 backdrop-blur-sm bg-white/30 z-10 flex flex-col items-center justify-center">
+          <Lock className="h-10 w-10 text-blue-400 mb-2" />
+          <p className="text-lg font-medium text-blue-800">Недоступно</p>
+          <p className="text-sm text-blue-600">Функционал в разработке</p>
+        </div>
+        <CardHeader>
+          <CardTitle>
+            {isAdmin ? 'управление релизами' : 'ваши релизы'}
+          </CardTitle>
+          <CardDescription>
+            {isAdmin ? 'управление каталогом' : 'ваши релизы'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-3xl font-semibold">{isAdmin ? '35' : '12'}</p>
+              <p className="text-sm text-muted-foreground">всего релизов</p>
+            </div>
+            <FileText className="h-10 w-10 text-muted-foreground/30" />
           </div>
         </CardContent>
       </Card>
