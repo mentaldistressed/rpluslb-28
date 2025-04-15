@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle2, Bell } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -36,7 +36,7 @@ export default function Header() {
         </div>
         
         <div className="flex items-center gap-3">
-          {user.role === 'sublabel' && <NotificationsMenu />}
+          <NotificationsMenu />
           
           <ThemeToggle />
           
