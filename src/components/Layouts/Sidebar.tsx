@@ -132,7 +132,7 @@ export default function Sidebar() {
       </div>
       
       <div className="mt-auto pt-4 border-t border-border/50 text-xs text-muted-foreground px-3">
-        <p>v1.1.6</p>
+        <p>v1.1.2</p>
         <p>обновление ПО от: 2024-04-15</p>
         <p>© {new Date().getFullYear()} rplus</p>
       </div>
