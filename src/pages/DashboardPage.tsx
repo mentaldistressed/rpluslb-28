@@ -302,7 +302,12 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="card-shadow border-border/40 transition-colors duration-200">
+            <Card className="card-shadow border-border/40 relative overflow-hidden transition-colors duration-200">
+              <div className="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-black/30 z-10 flex flex-col items-center justify-center">
+                <Lock className="h-10 w-10 text-blue-400 dark:text-blue-300 mb-2" />
+                <p className="text-lg font-medium text-blue-800 dark:text-blue-300">недоступно</p>
+                <p className="text-sm text-blue-600 dark:text-blue-400">функционал в разработке</p>
+              </div>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -311,7 +316,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-center h-[180px] bg-secondary/30 dark:bg-secondary/20 rounded-lg transition-colors duration-200">
-                  <p className="text-muted-foreground">аналитика будет доступна скоро</p>
+                  <p className="text-muted-foreground">аналитика пока недоступна</p>
                 </div>
               </CardContent>
             </Card>
