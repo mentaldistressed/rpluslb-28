@@ -1,3 +1,4 @@
+
 import { Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,16 +33,14 @@ export function NotificationsMenu() {
   
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
-        
-      if (error) throw error;
-      
+      // Since we don't have a notifications table yet, we're creating notifications
+      // dynamically. In a real implementation, we would update a real table.
+      // For now we'll just update our local state
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
       );
+      
+      toast.success('Уведомление помечено как прочитанное');
     } catch (error) {
       console.error('Error marking notification as read:', error);
       toast.error('Не удалось пометить уведомление как прочитанное');
@@ -50,13 +49,7 @@ export function NotificationsMenu() {
   
   const markAllAsRead = async () => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('user_id', user?.id);
-        
-      if (error) throw error;
-      
+      // Since we don't have a notifications table yet, we're updating our local state
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       toast.success('Все уведомления помечены как прочитанные');
     } catch (error) {
@@ -69,6 +62,8 @@ export function NotificationsMenu() {
     if (!user) return;
     
     const fetchNotifications = async () => {
+      const tempNotifications: Notification[] = [];
+      
       if (user.role === 'sublabel') {
         // Get user's tickets for sublabel notifications
         const { data: userTickets } = await supabase
@@ -110,7 +105,7 @@ export function NotificationsMenu() {
             type: 'rating_request'
           }));
           
-          setNotifications(prev => [...prev, ...ratingNotifications]);
+          tempNotifications.push(...ratingNotifications);
         }
         
         // Add message notifications
@@ -124,7 +119,7 @@ export function NotificationsMenu() {
             type: 'new_message'
           }));
           
-          setNotifications(prev => [...prev, ...messageNotifications]);
+          tempNotifications.push(...messageNotifications);
         }
       } else if (user.role === 'admin') {
         // Get recent unread messages for admin
@@ -154,7 +149,7 @@ export function NotificationsMenu() {
               type: 'new_message'
             }));
             
-          setNotifications(prev => [...prev, ...messageNotifications]);
+          tempNotifications.push(...messageNotifications);
         }
         
         if (recentTickets) {
@@ -168,32 +163,26 @@ export function NotificationsMenu() {
             type: 'new_ticket'
           }));
           
-          setNotifications(prev => [...prev, ...ticketNotifications]);
+          tempNotifications.push(...ticketNotifications);
         }
       }
+      
+      // Retrieve read state from localStorage as a temporary storage
+      // In a real application, this would come from the database
+      const storedReadStates = localStorage.getItem('notificationReadStates');
+      const readStates = storedReadStates ? JSON.parse(storedReadStates) : {};
+      
+      // Apply read states to notifications
+      const notificationsWithReadState = tempNotifications.map(notification => ({
+        ...notification,
+        read: readStates[notification.id] === true
+      }));
+      
+      setNotifications(notificationsWithReadState);
     };
     
     fetchNotifications();
     
-    // Update each notification to include read status from database
-    const { data: dbNotifications } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (dbNotifications) {
-      setNotifications(dbNotifications.map(n => ({
-        id: n.id,
-        ticketId: n.ticket_id,
-        content: n.content,
-        createdAt: n.created_at,
-        read: n.read,
-        type: n.type,
-        ticketTitle: n.ticket_title
-      })));
-    }
-
     // Subscribe to realtime updates
     const channel = supabase
       .channel('notifications')
@@ -278,6 +267,31 @@ export function NotificationsMenu() {
     };
   }, [user]);
 
+  // Override markAsRead to save read states to localStorage
+  const handleMarkAsRead = async (notificationId: string) => {
+    // Store read state in localStorage
+    const storedReadStates = localStorage.getItem('notificationReadStates');
+    const readStates = storedReadStates ? JSON.parse(storedReadStates) : {};
+    readStates[notificationId] = true;
+    localStorage.setItem('notificationReadStates', JSON.stringify(readStates));
+    
+    // Update state
+    markAsRead(notificationId);
+  };
+  
+  // Override markAllAsRead to save all read states to localStorage
+  const handleMarkAllAsRead = async () => {
+    // Store read states in localStorage
+    const readStates = notifications.reduce((acc, notification) => {
+      acc[notification.id] = true;
+      return acc;
+    }, {} as Record<string, boolean>);
+    localStorage.setItem('notificationReadStates', JSON.stringify(readStates));
+    
+    // Update state
+    markAllAsRead();
+  };
+
   const hasUnread = notifications.some(n => !n.read);
   
   return (
@@ -297,7 +311,7 @@ export function NotificationsMenu() {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={markAllAsRead}
+              onClick={handleMarkAllAsRead}
               className="text-xs"
             >
               пометить все как прочитанные
@@ -336,7 +350,7 @@ export function NotificationsMenu() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => markAsRead(notification.id)}
+                      onClick={() => handleMarkAsRead(notification.id)}
                     >
                       <Check className="h-4 w-4" />
                       <span className="sr-only">Пометить как прочитанное</span>
