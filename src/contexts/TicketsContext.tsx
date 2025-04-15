@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Ticket, Message, User } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -175,24 +174,31 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
               await sendEmailNotification(
                 admin.email,
                 `Новый тикет: ${newTicket.title}`,
-                `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                  <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Создан новый тикет</h2>
-                  <p><strong>Заголовок:</strong> ${newTicket.title}</p>
-                  <p><strong>Приоритет:</strong> ${
-                    newTicket.priority === 'low' ? 'Низкий' : 
-                    newTicket.priority === 'medium' ? 'Средний' : 'Высокий'
-                  }</p>
-                  <p><strong>Создан:</strong> ${creator?.name || 'Неизвестный пользователь'}</p>
-                  <p><strong>Описание:</strong> ${newTicket.description}</p>
-                  <div style="margin-top: 20px; text-align: center;">
-                    <a href="${window.location.origin}/tickets/${newTicket.id}" 
-                       style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px;">
-                      Перейти к тикету
-                    </a>
+                `<!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                </head>
+                <body>
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+                    <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Создан новый тикет</h2>
+                    <p><strong>Заголовок:</strong> ${newTicket.title}</p>
+                    <p><strong>Приоритет:</strong> ${
+                      newTicket.priority === 'low' ? 'Низкий' : 
+                      newTicket.priority === 'medium' ? 'Средний' : 'Высокий'
+                    }</p>
+                    <p><strong>Создан:</strong> ${creator?.name || 'Неизвестный пользователь'}</p>
+                    <p><strong>Описание:</strong> ${newTicket.description}</p>
+                    <div style="margin-top: 20px; text-align: center;">
+                      <a href="${window.location.origin}/tickets/${newTicket.id}" 
+                         style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px;">
+                        Перейти к тикету
+                      </a>
+                    </div>
                   </div>
-                </div>
-                `,
+                </body>
+                </html>`,
                 newTicket.id,
                 undefined,
                 creator?.id
@@ -232,7 +238,13 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
               await sendEmailNotification(
                 creator.email,
                 `Обновление статуса тикета: ${updatedTicket.title}`,
-                `
+                `<!DOCTYPE html>
+              <html>
+              <head>
+                  <meta charset="UTF-8">
+                  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+              </head>
+              <body>
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
                   <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Статус тикета обновлен</h2>
                   <p><strong>Заголовок:</strong> ${updatedTicket.title}</p>
@@ -247,7 +259,8 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
                     </a>
                   </div>
                 </div>
-                `,
+              </body>
+              </html>`,
                 updatedTicket.id,
                 undefined,
                 undefined,

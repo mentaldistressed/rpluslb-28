@@ -64,7 +64,8 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       subject: subject
     });
     
-    // Set content and headers properly for UTF-8 encoding
+    // Important: Do NOT use base64 encoding, as this is causing the email content to be displayed as encoded bytes
+    // Instead, use the default quoted-printable encoding which is better for UTF-8 content
     const result = await client.send({
       from: FROM_EMAIL,
       to: to,
@@ -73,7 +74,7 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       html: body,
       headers: {
         "Content-Type": "text/html; charset=UTF-8",
-        "Content-Transfer-Encoding": "base64"
+        // Remove base64 encoding to fix the character display issue
       },
     });
 
