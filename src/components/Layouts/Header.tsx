@@ -2,6 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +19,7 @@ export default function Header() {
   if (!user) return null;
 
   return (
-    <header className="border-b border-border/40 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+    <header className="border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-50">
       <div className="h-16 flex items-center justify-between px-6">
         <div className="flex items-center space-x-2">
           <div className="text-xl font-medium">
@@ -31,6 +32,8 @@ export default function Header() {
           <Button variant="ghost" size="icon" className="text-muted-foreground">
             <Bell className="h-5 w-5" />
           </Button>
+          
+          <ThemeToggle />
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
