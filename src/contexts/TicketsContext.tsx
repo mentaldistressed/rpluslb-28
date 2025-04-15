@@ -231,8 +231,25 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         if (updatedTicket.status !== oldTicket.status) {
           const statusChanged = updatedTicket.status !== oldTicket.status;
           
-          if (statusChanged && user && user.id !== updatedTicket.created_by) {
+          if (statusChanged && user) {
             const creator = users.find(u => u.id === updatedTicket.created_by);
+            
+            // Show notification for sublabel when their ticket is closed
+            if (updatedTicket.status === 'closed' && creator && creator.role === 'sublabel') {
+              // Add a special message to trigger notification
+              await supabase
+                .from('messages')
+                .insert({
+                  ticket_id: updatedTicket.id,
+                  user_id: user.id,
+                  content: 'RATING_REQUEST'
+                });
+                
+              toast({
+                title: "тикет закрыт",
+                description: "пожалуйста, оцените качество решения вопроса",
+              });
+            }
             
             if (creator && creator.email && creator.role === 'sublabel') {
               await sendEmailNotification(

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTickets } from "@/contexts/TicketsContext";
@@ -46,7 +45,6 @@ export default function TicketDetailPage() {
   const [isSending, setIsSending] = useState(false);
   const [showKeyboardHint, setShowKeyboardHint] = useState(true);
   
-  // Проверка доступа к тикету
   useEffect(() => {
     if (ticketId && user && !userCanAccessTicket(ticketId)) {
       toast({
@@ -58,34 +56,27 @@ export default function TicketDetailPage() {
     }
   }, [ticketId, user, navigate, userCanAccessTicket, toast]);
   
-  // Get ticket and messages
   const ticket = ticketId ? getTicketById(ticketId) : undefined;
   const messages = ticketId ? getTicketMessages(ticketId) : [];
   
-  // Extract key information from the first message for the description
   const firstMessage = messages.length > 0 ? messages[0] : null;
   const ticketSummary = firstMessage ? extractSummary(firstMessage.content) : '';
   
-  // Function to extract a summary from the message content
   function extractSummary(content: string) {
-    // Get first paragraph or first 150 characters, whichever is shorter
     const firstParagraph = content.split('\n')[0];
     return firstParagraph.length > 150 ? firstParagraph.substring(0, 147) + '...' : firstParagraph;
   }
   
-  // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
   
-  // Set initial status from ticket
   useEffect(() => {
     if (ticket) {
       setCurrentStatus(ticket.status);
     }
   }, [ticket]);
   
-  // Auto-focus textarea when page loads
   useEffect(() => {
     if (textareaRef.current && ticket?.status !== 'closed') {
       textareaRef.current.focus();
@@ -142,7 +133,6 @@ export default function TicketDetailPage() {
       const success = await updateTicketStatus(ticket.id, newStatus);
       
       if (success) {
-        // Add system message about status change
         const statusMessage = `Статус тикета изменен на "${getStatusLabel(newStatus)}"`;
         toast({
           title: "Статус изменен",
@@ -163,7 +153,6 @@ export default function TicketDetailPage() {
       const success = await addMessage(ticket.id, newMessage);
       if (success) {
         setNewMessage("");
-        // Focus textarea again after sending
         setTimeout(() => {
           if (textareaRef.current) {
             textareaRef.current.focus();
@@ -178,12 +167,10 @@ export default function TicketDetailPage() {
   };
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Hide keyboard hint when user starts typing
     if (showKeyboardHint && newMessage.length > 0) {
       setShowKeyboardHint(false);
     }
     
-    // Send message on Enter (without Shift)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -205,7 +192,6 @@ export default function TicketDetailPage() {
       </div>
       
       <div className="space-y-6">
-        {/* Header with ticket title and top-level details */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 bg-card border rounded-lg p-4 shadow-sm">
           <div>
             <h1 className="text-2xl font-bold">{ticket.title}</h1>
@@ -244,9 +230,7 @@ export default function TicketDetailPage() {
         </div>
         
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Ticket details and messages */}
           <div className="flex-1 order-2 md:order-1">
-            {/* Ticket summary card */}
             <Card className="mb-6">
               <CardHeader className="pb-3 flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">описание</CardTitle>
@@ -272,7 +256,6 @@ export default function TicketDetailPage() {
               </CardContent>
             </Card>
             
-            {/* Messages */}
             <div className="border rounded-lg bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b bg-muted/30 flex items-center">
                 <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -312,17 +295,17 @@ export default function TicketDetailPage() {
                             <div>
                               <div className={`mb-1 flex items-center gap-2 ${isCurrentUser ? 'justify-end' : ''}`}>
                                 <div className="font-medium text-sm">
-                                {messageUser.role === 'admin' && (
-                                  <span
-                                    className={`
-                                      text-xs px-1.5 py-0.5 rounded mr-1
-                                      ${messageUser.name === 'rplus' ? 'bg-blue-200' : 'bg-primary/10 text-primary'}
-                                    `}
-                                  >
-                                    {messageUser.name === 'rplus' ? 'Система' : 'Менеджер'}
-                                  </span>
-                                )}
-                                {messageUser.name}
+                                  {messageUser.role === 'admin' && (
+                                    <span
+                                      className={`
+                                        text-xs px-1.5 py-0.5 rounded mr-1
+                                        ${messageUser.name === 'rplus' ? 'bg-blue-200' : 'bg-primary/10 text-primary'}
+                                      `}
+                                    >
+                                      {messageUser.name === 'rplus' ? 'Система' : 'Менеджер'}
+                                    </span>
+                                  )}
+                                  {messageUser.name}
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {messageTime}
@@ -347,69 +330,66 @@ export default function TicketDetailPage() {
                 )}
               </div>
               
-              {/* Reply form with improved keyboard hint OR closed notice */}
               <div className="p-3 border-t">
-                {isTicketClosed && isSublabel ? (
-                  <TicketClosedNotice />
-                ) : (
-                  <form onSubmit={handleSendMessage} className="relative">
-                    <Textarea
-                      ref={textareaRef}
-                      value={newMessage}
-                      onChange={(e) => {
-                        setNewMessage(e.target.value);
-                        if (e.target.value.length > 0) {
-                          setShowKeyboardHint(false);
-                        } else {
-                          setShowKeyboardHint(true);
-                        }
-                      }}
-                      onKeyDown={handleKeyDown}
-                      onFocus={() => setShowKeyboardHint(true)}
-                      onBlur={() => setShowKeyboardHint(false)}
-                      placeholder="введите Ваше сообщение..."
-                      className="mb-2 resize-none min-h-[100px]"
-                      rows={3}
-                    />
-                    
-                    {/* New keyboard hint styling */}
-                    {showKeyboardHint && (
-                      <div className="absolute bottom-[60px] right-0 bg-background border shadow-sm rounded-md py-1 px-2 text-xs text-muted-foreground flex items-center gap-1 mr-3">
-                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Shift</kbd>
-                        <span>+</span>
-                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Enter</kbd>
-                        <span className="mx-1">для новой строки</span>
-                        <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium ml-1">Enter</kbd>
-                        <span className="mx-1">для отправки</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex justify-end">
-                      <Button 
-                        type="submit" 
-                        disabled={isLoading || isSending || !newMessage.trim()}
-                        className="gap-2"
-                      >
-                        {isLoading || isSending ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                            отправка...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="h-4 w-4" />
-                            отправить
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
+                {ticket.status === 'closed' && (
+                  <TicketClosedNotice ticketId={ticket.id} />
                 )}
+                
+                <form onSubmit={handleSendMessage} className="relative">
+                  <Textarea
+                    ref={textareaRef}
+                    value={newMessage}
+                    onChange={(e) => {
+                      setNewMessage(e.target.value);
+                      if (e.target.value.length > 0) {
+                        setShowKeyboardHint(false);
+                      } else {
+                        setShowKeyboardHint(true);
+                      }
+                    }}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => setShowKeyboardHint(true)}
+                    onBlur={() => setShowKeyboardHint(false)}
+                    placeholder="введите Ваше сообщение..."
+                    className="mb-2 resize-none min-h-[100px]"
+                    rows={3}
+                  />
+                  
+                  {showKeyboardHint && (
+                    <div className="absolute bottom-[60px] right-0 bg-background border shadow-sm rounded-md py-1 px-2 text-xs text-muted-foreground flex items-center gap-1 mr-3">
+                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Shift</kbd>
+                      <span>+</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium">Enter</kbd>
+                      <span className="mx-1">для новой строки</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px] font-medium ml-1">Enter</kbd>
+                      <span className="mx-1">для отправки</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-end">
+                    <Button 
+                      type="submit" 
+                      disabled={isLoading || isSending || !newMessage.trim()}
+                      className="gap-2"
+                    >
+                      {isLoading || isSending ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          отправка...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          отправить
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
           
-          {/* Sidebar - Ticket Info */}
           <div className="w-full md:w-72 order-1 md:order-2">
             <Card>
               <CardHeader className="pb-3">

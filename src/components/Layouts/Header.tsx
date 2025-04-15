@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NotificationsMenu } from "@/components/NotificationsMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,9 +36,7 @@ export default function Header() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground transition-colors duration-200">
-            <Bell className="h-5 w-5" />
-          </Button>
+          <NotificationsMenu />
           
           <ThemeToggle />
           
