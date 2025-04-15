@@ -1,6 +1,6 @@
-
-import { Bell, Check } from "lucide-react";
+import { Bell, CheckCircle, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -304,62 +304,75 @@ export function NotificationsMenu() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="end" forceMount>
-        <div className="flex items-center justify-between px-2 py-1.5">
-          <DropdownMenuLabel>уведомления</DropdownMenuLabel>
+      <DropdownMenuContent className="w-96" align="end" forceMount>
+        <div className="flex items-center justify-between px-4 py-2">
+          <DropdownMenuLabel className="text-base font-semibold">
+            Уведомления
+          </DropdownMenuLabel>
           {notifications.length > 0 && (
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={handleMarkAllAsRead}
-              className="text-xs"
+              onClick={markAllAsRead}
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
             >
-              пометить все как прочитанные
+              <CheckCircle className="h-4 w-4" />
+              Все прочитаны
             </Button>
           )}
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup className="max-h-[300px] overflow-y-auto">
-          {notifications.length === 0 ? (
-            <div className="p-4 text-sm text-center text-muted-foreground">
-              нет новых уведомлений
-            </div>
-          ) : (
-            notifications
-              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-              .map((notification) => (
-                <div key={notification.id} className="flex items-center gap-2 px-2">
-                  <DropdownMenuItem asChild className="flex-1">
-                    <Link 
-                      to={`/tickets/${notification.ticketId}`}
-                      className="cursor-pointer"
-                    >
-                      <div className="flex flex-col gap-1 w-full p-1">
-                        <p className="text-sm font-medium">
-                          {notification.ticketTitle || 'Тикет'}
-                        </p>
-                        <p className="text-sm">{notification.content}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(notification.createdAt), "dd.MM.yyyy HH:mm")}
-                        </p>
-                      </div>
-                    </Link>
-                  </DropdownMenuItem>
-                  {!notification.read && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleMarkAsRead(notification.id)}
-                    >
-                      <Check className="h-4 w-4" />
-                      <span className="sr-only">Пометить как прочитанное</span>
-                    </Button>
-                  )}
-                </div>
-              ))
-          )}
-        </DropdownMenuGroup>
+        <ScrollArea className="h-[300px] w-full">
+          <DropdownMenuGroup className="p-2">
+            {notifications.length === 0 ? (
+              <div className="p-4 text-sm text-center text-muted-foreground">
+                Нет новых уведомлений
+              </div>
+            ) : (
+              notifications
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                .map((notification) => (
+                  <div 
+                    key={notification.id} 
+                    className="flex items-center gap-2 hover:bg-accent/50 rounded-md transition-colors"
+                  >
+                    <DropdownMenuItem asChild className="flex-1 w-full">
+                      <Link 
+                        to={`/tickets/${notification.ticketId}`}
+                        className="cursor-pointer flex justify-between items-center w-full"
+                      >
+                        <div className="flex flex-col gap-1 w-full p-2">
+                          <p className="text-sm font-medium">
+                            {notification.ticketTitle || 'Тикет'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {notification.content}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(notification.createdAt), "dd.MM.yyyy HH:mm")}
+                          </p>
+                        </div>
+                        {!notification.read && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 opacity-50 hover:opacity-100"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              markAsRead(notification.id);
+                            }}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="sr-only">Пометить как прочитанное</span>
+                          </Button>
+                        )}
+                      </Link>
+                    </DropdownMenuItem>
+                  </div>
+                ))
+            )}
+          </DropdownMenuGroup>
+        </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
   );
