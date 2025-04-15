@@ -2,20 +2,39 @@
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="relative h-9 w-9 rounded-full transition-colors hover:bg-secondary/80"
+      className={cn(
+        "relative h-9 w-9 rounded-full transition-all duration-300",
+        "border-border/50 bg-background hover:bg-secondary",
+        "dark:hover:bg-secondary dark:border-border/30 dark:hover:border-border/50"
+      )}
     >
-      <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
       <span className="sr-only">Переключить тему</span>
+      <span 
+        className={cn(
+          "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
+          theme === "dark" ? "opacity-0" : "opacity-100"
+        )}
+      >
+        <Sun className="h-5 w-5 text-amber-500" />
+      </span>
+      <span 
+        className={cn(
+          "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
+          theme === "light" ? "opacity-0" : "opacity-100"
+        )}
+      >
+        <Moon className="h-5 w-5 text-blue-400" />
+      </span>
     </Button>
   );
 }

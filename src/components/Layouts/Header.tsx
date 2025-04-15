@@ -11,15 +11,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, UserCircle2, Bell, Menu } from "lucide-react";
+import { LogOut, UserCircle2, Bell } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
 
   if (!user) return null;
 
   return (
-    <header className="border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-50">
+    <header className={cn(
+      "border-b border-border/40 backdrop-blur-md sticky top-0 z-50 transition-colors duration-200",
+      theme === "dark" ? "bg-background/70" : "bg-background/80"
+    )}>
       <div className="h-16 flex items-center justify-between px-6">
         <div className="flex items-center space-x-2">
           <div className="text-xl font-medium">
@@ -29,7 +35,7 @@ export default function Header() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="text-muted-foreground">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground transition-colors duration-200">
             <Bell className="h-5 w-5" />
           </Button>
           

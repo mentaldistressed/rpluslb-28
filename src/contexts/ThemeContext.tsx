@@ -27,9 +27,19 @@ export function ThemeProvider({
   storageKey = "vite-ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Проверяем localStorage
+    const storedTheme = localStorage.getItem(storageKey) as Theme;
+    if (storedTheme) return storedTheme;
+    
+    // Проверяем системные настройки
+    if (typeof window !== "undefined") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      return prefersDark ? "dark" : defaultTheme;
+    }
+    
+    return defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -37,6 +47,21 @@ export function ThemeProvider({
     root.classList.add(theme);
     localStorage.setItem(storageKey, theme);
   }, [theme, storageKey]);
+
+  // Добавляем слушатель изменений системной темы
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      const currentTheme = localStorage.getItem(storageKey);
+      // Обновляем тему только если пользователь не установил её вручную
+      if (!currentTheme) {
+        setTheme(e.matches ? "dark" : "light");
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [storageKey]);
 
   const value = {
     theme,

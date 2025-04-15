@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Ticket, Users, Plus, Settings, Landmark, Library, Home } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Sidebar() {
   const { user } = useAuth();
   const { userCanAccessTicket } = useTickets();
+  const { theme } = useTheme();
   const location = useLocation();
   const { ticketId } = useParams<{ ticketId: string }>();
   
@@ -87,12 +89,12 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-border/40 shadow-sm min-h-[calc(100vh-4rem)] flex flex-col p-4">
+    <div className="w-64 bg-card border-r border-border/40 shadow-sm min-h-[calc(100vh-4rem)] flex flex-col p-4 transition-colors duration-200">
       <div className="flex-1 space-y-6">
         {isUser && (
           <Link to="/tickets/new">
-            <Button className="w-full justify-start font-medium shadow-sm" variant="default">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="w-full justify-start font-medium shadow-sm group" variant="default">
+              <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
               <span>создать тикет</span>
             </Button>
           </Link>
@@ -104,7 +106,7 @@ export default function Sidebar() {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors",
+                "flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200",
                 item.active
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-foreground/80 hover:bg-secondary hover:text-foreground"
