@@ -99,7 +99,7 @@ export default function SettingsPage() {
             </Badge>
           </div>
           <CardDescription>
-            инструменты находятся в стадии разработки и будут доступны в ближайшее время
+            инструменты находятся в стадии разработки и будут доступны в ближайшем обновлении системы
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">

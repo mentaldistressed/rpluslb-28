@@ -44,7 +44,7 @@ export default function ReleasesPage() {
             </Badge>
           </div>
           <CardDescription>
-            каталог релизов находится в стадии разработки и будет доступен в ближайшее время
+            каталог релизов находится в стадии разработки и будет доступен в ближайшем обновлении системы
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">

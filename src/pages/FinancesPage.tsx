@@ -99,7 +99,7 @@ export default function SettingsPage() {
             </Badge>
           </div>
           <CardDescription>
-            финансовая статистика находится в стадии разработки и будет доступна в ближайшее время
+            финансовая статистика находится в стадии разработки и будет доступна в ближайшем обновлении системы
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">

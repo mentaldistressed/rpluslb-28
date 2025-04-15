@@ -37,7 +37,7 @@ const Index = () => {
         <Card className="card-shadow border-0">
           <CardContent className="p-8 flex flex-col items-center">
             <p className="mb-6 text-foreground">
-              Для доступа к личному кабинету необходимо авторизоваться в системе
+              для доступа к личному кабинету необходимо авторизоваться в системе
             </p>
             <Button onClick={() => navigate("/login")} className="gap-2">
               <span>войти в систему</span>
