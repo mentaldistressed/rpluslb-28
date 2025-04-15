@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Ticket, Message, User } from "@/types";
 import { useAuth } from "./AuthContext";
@@ -29,7 +28,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Функция для отправки уведомлений по email
   const sendEmailNotification = async (
     recipientEmail: string,
     subject: string,
@@ -40,7 +38,7 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     ticketStatus?: string
   ) => {
     try {
-      const { data, error } = await supabase.functions.invoke('send-email1', {
+      const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           to: recipientEmail,
           subject,
@@ -65,26 +63,21 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Функция для проверки доступа к тикету
   const userCanAccessTicket = (ticketId: string) => {
     if (!user) return false;
     
-    // Админы имеют доступ ко всем тикетам
     if (user.role === 'admin') return true;
     
-    // Саб-лейблы имеют доступ только к своим тикетам
     const ticket = getTicketById(ticketId);
     if (!ticket) return false;
     
     return ticket.createdBy === user.id;
   };
 
-  // Function to fetch all data from the database
   const fetchData = async () => {
     setIsLoading(true);
     
     try {
-      // Fetch users (profiles) in parallel
       const profilesPromise = supabase.from('profiles').select('*');
       const ticketsPromise = supabase.from('tickets').select('*').order('created_at', { ascending: false });
       const messagesPromise = supabase.from('messages').select('*').order('created_at', { ascending: true });
@@ -95,7 +88,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         messagesPromise
       ]);
       
-      // Handle profiles
       if (profilesResponse.error) {
         console.error("Error fetching profiles:", profilesResponse.error);
       } else if (profilesResponse.data) {
@@ -109,7 +101,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         setUsers(mappedUsers);
       }
       
-      // Handle tickets
       if (ticketsResponse.error) {
         console.error("Error fetching tickets:", ticketsResponse.error);
       } else if (ticketsResponse.data) {
@@ -127,7 +118,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         setTickets(mappedTickets);
       }
       
-      // Handle messages
       if (messagesResponse.error) {
         console.error("Error fetching messages:", messagesResponse.error);
       } else if (messagesResponse.data) {
@@ -147,12 +137,9 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  // Initialize data and set up realtime subscriptions
   useEffect(() => {
-    // Fetch initial data
     fetchData();
     
-    // Set up realtime subscription for tickets channel
     const ticketsChannel = supabase
       .channel('tickets-channel')
       .on('postgres_changes', { 
@@ -163,7 +150,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         console.log('Ticket INSERT received:', payload);
         const newTicket = payload.new as any;
         
-        // Добавляем новый тикет в состояние
         setTickets(prevTickets => [
           {
             id: newTicket.id,
@@ -179,15 +165,10 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
           ...prevTickets
         ]);
         
-        // Отправляем уведомление администраторам о новом тикете
         if (user && user.role !== 'admin') {
-          // Получаем пользователя, создавшего тикет
           const creator = users.find(u => u.id === newTicket.created_by);
-          
-          // Получаем всех администраторов
           const admins = users.filter(u => u.role === 'admin');
           
-          // Отправляем уведомление каждому администратору
           for (const admin of admins) {
             if (admin.email) {
               await sendEmailNotification(
@@ -240,17 +221,13 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
           } : ticket
         ));
         
-        // Отправляем уведомление, если изменился статус тикета
         if (updatedTicket.status !== oldTicket.status) {
           const statusChanged = updatedTicket.status !== oldTicket.status;
           
-          // Если статус изменился и создатель тикета не является текущим пользователем
           if (statusChanged && user && user.id !== updatedTicket.created_by) {
-            // Получаем создателя тикета
             const creator = users.find(u => u.id === updatedTicket.created_by);
             
             if (creator && creator.email && creator.role === 'sublabel') {
-              // Отправляем уведомление создателю тикета
               await sendEmailNotification(
                 creator.email,
                 `Обновление статуса тикета: ${updatedTicket.title}`,
@@ -292,7 +269,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         console.log("Tickets subscription status:", status);
       });
       
-    // Set up realtime subscription for messages channel
     const messagesChannel = supabase
       .channel('messages-channel')
       .on('postgres_changes', { 
@@ -314,22 +290,15 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
           }
         ]);
         
-        // Получаем информацию о тикете
         const ticket = tickets.find(t => t.id === newMessage.ticket_id);
         if (!ticket) return;
         
-        // Получаем отправителя сообщения
         const sender = users.find(u => u.id === newMessage.user_id);
         if (!sender) return;
         
-        // Отправляем уведомление в зависимости от ролей пользователей
-        
-        // 1. Если отправитель - саб-лейбл, уведомляем админов
         if (sender.role === 'sublabel') {
-          // Получаем всех администраторов
           const admins = users.filter(u => u.role === 'admin');
           
-          // Отправляем уведомление каждому администратору
           for (const admin of admins) {
             if (admin.email && admin.id !== newMessage.user_id) {
               await sendEmailNotification(
@@ -357,9 +326,7 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
           }
         }
         
-        // 2. Если отправитель - админ, уведомляем создателя тикета (саб-лейбл)
         if (sender.role === 'admin') {
-          // Получаем создателя тикета
           const creator = users.find(u => u.id === ticket.createdBy);
           
           if (creator && creator.email && creator.role === 'sublabel') {
@@ -387,7 +354,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
           }
         }
         
-        // Play a sound for new messages
         const audio = new Audio('/message.mp3');
         audio.volume = 0.5;
         audio.play().catch(e => console.log('Error playing sound:', e));
@@ -420,7 +386,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         console.log("Messages subscription status:", status);
       });
       
-    // Set up realtime subscription for profiles channel
     const profilesChannel = supabase
       .channel('profiles-channel')
       .on('postgres_changes', { 
@@ -430,7 +395,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
       }, (payload) => {
         console.log('Profiles change received:', payload);
         
-        // Real-time update logic
         if (payload.eventType === 'INSERT') {
           const newProfile = payload.new as any;
           setUsers(prevUsers => [
@@ -489,7 +453,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     
     try {
-      // Insert ticket into database
       const { data: newTicket, error: ticketError } = await supabase
         .from('tickets')
         .insert({
@@ -506,7 +469,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         throw ticketError;
       }
       
-      // Insert initial message (description)
       const { error: messageError } = await supabase
         .from('messages')
         .insert({
@@ -619,7 +581,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     
     try {
-      // Add message to database
       const { error: messageError } = await supabase
         .from('messages')
         .insert({
@@ -632,7 +593,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         throw messageError;
       }
       
-      // Update ticket's updated_at time
       const { error: ticketError } = await supabase
         .from('tickets')
         .update({ updated_at: new Date().toISOString() })

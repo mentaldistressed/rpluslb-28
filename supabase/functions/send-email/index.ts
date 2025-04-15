@@ -6,11 +6,7 @@ import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 const SUPABASE_URL = "https://daqvphzqrnsxqthggwrw.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const SMTP_HOST = Deno.env.get("SMTP_HOST")?.trim() || "";
-<<<<<<< HEAD
 const SMTP_PORT = Number(Deno.env.get("SMTP_PORT")) || 465; // SSL port for mail.ru
-=======
-const SMTP_PORT = Number(Deno.env.get("SMTP_PORT")) || 587;
->>>>>>> parent of f060d13 (Fix: Email sending error)
 const SMTP_USER = Deno.env.get("SMTP_USER") || "";
 const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD") || "";
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "";
@@ -32,7 +28,6 @@ interface EmailPayload {
 
 const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
   try {
-<<<<<<< HEAD
     // Detailed validation of SMTP configuration
     const configIssues = [];
     if (!SMTP_HOST) configIssues.push("SMTP_HOST is missing");
@@ -44,10 +39,6 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
     if (configIssues.length > 0) {
       console.error("SMTP configuration issues:", configIssues);
       throw new Error(`SMTP configuration is incomplete: ${configIssues.join(", ")}`);
-=======
-    if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD || !FROM_EMAIL) {
-      throw new Error("SMTP configuration is incomplete");
->>>>>>> parent of f060d13 (Fix: Email sending error)
     }
 
     console.log(`Attempting to send email to ${to} via ${SMTP_HOST}:${SMTP_PORT}`);
@@ -62,28 +53,22 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
           password: SMTP_PASSWORD,
         },
       },
-<<<<<<< HEAD
       debug: true, // Enable debug logging
     });
 
-    // Send the email with more detailed logging
+    // Send the email with more detailed logging and correct encoding headers
     console.log("Attempting to send email with the following parameters:", {
       from: FROM_EMAIL,
       to: to,
       subject: subject,
-      contentType: "text/html"
+      contentType: "text/html; charset=utf-8"
     });
     
     const result = await client.send({
-=======
-    });
-
-    await client.send({
->>>>>>> parent of f060d13 (Fix: Email sending error)
       from: FROM_EMAIL,
       to: to,
       subject: subject,
-      content: "text/html",
+      content: "text/html; charset=utf-8",
       html: body,
     });
 
