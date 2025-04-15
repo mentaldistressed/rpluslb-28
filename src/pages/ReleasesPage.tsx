@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Clock, PackageX, Bell } from "lucide-react";
 
 export default function ReleasesPage() {
   const { user } = useAuth();
@@ -17,13 +18,30 @@ export default function ReleasesPage() {
         <h1 className="text-2xl font-bold">{isAdmin ? 'управление каталогом' : 'мой каталог'}</h1>
       </div>
 
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <Bell className="h-5 w-5 text-blue-500" />
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-800">Скоро доступно</h3>
+            <p className="text-sm text-blue-600">Работа над каталогом релизов в активной фазе</p>
+          </div>
+        </div>
+      </div>
+
       <Card className="border-border/40 overflow-hidden">
         <CardHeader className="bg-secondary/30">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 bg-secondary/50 rounded-full flex items-center justify-center">
-              <Clock className="h-5 w-5 text-muted-foreground" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-secondary/50 rounded-full flex items-center justify-center">
+                <PackageX className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <CardTitle>функционал в разработке</CardTitle>
             </div>
-            <CardTitle>функционал в разработке</CardTitle>
+            <Badge variant="outline" className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">
+              Скоро
+            </Badge>
           </div>
           <CardDescription>
             Каталог релизов находится в стадии разработки и будет доступен в ближайшее время
@@ -34,8 +52,8 @@ export default function ReleasesPage() {
             <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
             <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
             <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
-            <div className="flex justify-center mt-4">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex justify-center mt-6">
+              <p className="text-sm text-muted-foreground px-4 py-2 bg-muted/30 rounded-full">
                 Каталог релизов будет доступен в ближайшем обновлении системы
               </p>
             </div>

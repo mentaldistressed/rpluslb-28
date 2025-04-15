@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,10 +32,10 @@ export default function DashboardPage() {
       try {
         setIsLoading(true);
         
-        // Get active tickets count
+        // Get active tickets count (both open and in-progress)
         const query = user.role === 'admin' 
-          ? supabase.from('tickets').select('id', { count: 'exact' }).eq('status', 'open')
-          : supabase.from('tickets').select('id', { count: 'exact' }).eq('status', 'open').eq('created_by', user.id);
+          ? supabase.from('tickets').select('id', { count: 'exact' }).in('status', ['open', 'in-progress'])
+          : supabase.from('tickets').select('id', { count: 'exact' }).in('status', ['open', 'in-progress']).eq('created_by', user.id);
         
         const { count, error } = await query;
         
