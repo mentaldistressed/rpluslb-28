@@ -17,7 +17,6 @@ import FinancesPage from "@/pages/FinancesPage";
 import MaintenancePage from "@/pages/MaintenancePage";
 import ReleasesPage from "@/pages/ReleasesPage";
 import DashboardPage from "@/pages/DashboardPage";
-import Index from "@/pages/Index";
 
 // Import Russian locale for date-fns
 import { ru } from "date-fns/locale";
@@ -77,8 +76,8 @@ const App = () => (
         <TicketsProvider>
           <MainLayout>
             <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Index />} />
+              {/* Redirect root to login or dashboard */}
+              <Route path="/" element={<Navigate to="/login" replace />} />
               <Route path="/login" element={<LoginPage />} />
               
               {/* Protected routes */}
