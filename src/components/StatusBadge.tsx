@@ -12,11 +12,11 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   const getStatusConfig = (status: TicketStatus) => {
     switch (status) {
       case "open":
-        return { label: "открыт", className: "bg-green-100 text-green-800 hover:bg-green-200" };
+        return { label: "открыт", className: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200" };
       case "in-progress":
-        return { label: "в обработке", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" };
+        return { label: "в обработке", className: "bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200" };
       case "closed":
-        return { label: "закрыт", className: "bg-gray-200 text-gray-800 hover:bg-gray-300" };
+        return { label: "закрыт", className: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200" };
     }
   };
 
@@ -38,11 +38,11 @@ export function PriorityBadge({ priority, className }: PriorityBadgeProps) {
   const getPriorityConfig = (priority: TicketPriority) => {
     switch (priority) {
       case "low":
-        return { label: "низкий", className: "bg-slate-100 text-slate-800 hover:bg-slate-100" };
+        return { label: "низкий", className: "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200" };
       case "medium":
-        return { label: "средний", className: "bg-amber-100 text-amber-800 hover:bg-amber-100" };
+        return { label: "средний", className: "bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200" };
       case "high":
-        return { label: "высокий", className: "bg-red-100 text-red-800 hover:bg-red-100" };
+        return { label: "высокий", className: "bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200" };
     }
   };
 

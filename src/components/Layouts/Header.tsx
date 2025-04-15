@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut } from "lucide-react";
+import { LogOut, ChevronDown } from "lucide-react";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -18,20 +18,22 @@ export default function Header() {
   if (!user) return null;
 
   return (
-    <header className="border-b bg-white">
+    <header className="border-b shadow-sm bg-white sticky top-0 z-50">
       <div className="h-16 flex items-center justify-between px-6">
         <div className="flex items-center space-x-2">
           <div className="text-xl font-medium">
-            <span className="font-extrabold">rplus </span>
-            <span className="font-light">» ЛКПО</span>
+            <span className="font-bold tracking-tight">rplus</span>
+            <span className="text-muted-foreground ml-2 text-base font-normal">ЛКПО</span>
           </div>
         </div>
         
-        <div className="flex items-center">
+        <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <UserAvatar user={user} />
+              <Button variant="ghost" className="flex items-center gap-2 h-9 px-2">
+                <UserAvatar user={user} size="sm" />
+                <span className="font-medium text-sm hidden sm:inline-block">{user.name}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -47,7 +49,7 @@ export default function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
+              <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>выйти</span>
               </DropdownMenuItem>

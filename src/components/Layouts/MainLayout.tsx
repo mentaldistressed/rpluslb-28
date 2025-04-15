@@ -7,6 +7,7 @@ import Sidebar from "./Sidebar";
 import { NewsBanner } from "@/components/NewsBanner";
 import { supabase } from "@/integrations/supabase/client";
 import MaintenancePage from "@/pages/MaintenancePage";
+import { Loader2 } from "lucide-react";
 
 interface MaintenanceSettings {
   enabled: boolean;
@@ -77,9 +78,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
   // Show loading state while checking maintenance mode
   if (isCheckingMaintenance) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="flex h-screen items-center justify-center">
-          <span>загрузка...</span>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary/70" />
+          <span className="text-sm text-muted-foreground">загрузка...</span>
         </div>
         <Toaster />
       </div>
@@ -105,13 +107,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <Header />
       <div className="flex flex-col flex-1">
         <div className="flex flex-1">
-        <Sidebar />
-         <main className="flex-1 p-6">
-           <div className="mb-4">
-             <NewsBanner />
-           </div>
-           {children}
-         </main>
+          <Sidebar />
+          <main className="flex-1 p-6 overflow-auto animate-fade-in">
+            <div className="mb-4 max-w-7xl mx-auto">
+              <NewsBanner />
+            </div>
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
+          </main>
         </div>
       </div>
       <Toaster />

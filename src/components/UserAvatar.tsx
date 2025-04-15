@@ -16,11 +16,30 @@ export function UserAvatar({ user, size = "md", className }: UserAvatarProps) {
     lg: "h-12 w-12"
   };
 
+  const getInitials = (name: string) => {
+    return name.split(" ")
+      .map(n => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  const getFallbackColor = (name: string) => {
+    // Simple hashing of name to get a consistent color
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Use hue-rotate to get different colors
+    const hue = hash % 360;
+    return `hue-rotate-[${hue}deg]`;
+  };
+
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
       <AvatarImage src={user.avatar} alt={user.name} />
-      <AvatarFallback className="bg-primary text-primary-foreground">
-        {user.name.split(" ").map(n => n[0]).join("")}
+      <AvatarFallback className={cn("bg-accent text-accent-foreground font-medium", getFallbackColor(user.name))}>
+        {getInitials(user.name)}
       </AvatarFallback>
     </Avatar>
   );

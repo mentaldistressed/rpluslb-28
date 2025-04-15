@@ -17,7 +17,6 @@ export default function Sidebar() {
   const isAdmin = user.role === 'admin';
   const isUser = user.role === 'sublabel';
   
-  // Проверяем доступ к текущему тикету, если мы находимся на странице тикета
   const hasTicketAccess = !ticketId || userCanAccessTicket(ticketId);
   
   const navItems = [
@@ -76,18 +75,18 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white border-r min-h-[calc(100vh-4rem)] flex flex-col p-4">
-      <div className="flex-1 space-y-4">
+    <div className="w-64 bg-card border-r shadow-sm min-h-[calc(100vh-4rem)] flex flex-col p-4">
+      <div className="flex-1 space-y-6">
         {isUser && (
           <Link to="/tickets/new">
-            <Button className="w-full justify-start" variant="default">
+            <Button className="w-full justify-start font-medium shadow-sm" variant="default">
               <Plus className="mr-2 h-4 w-4" />
               <span>создать новый тикет</span>
             </Button>
           </Link>
         )}
         
-        <nav className="space-y-1 mt-2">
+        <nav className="space-y-1.5">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -95,8 +94,8 @@ export default function Sidebar() {
               className={cn(
                 "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                 item.active
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-muted"
+                  ? "bg-accent text-accent-foreground shadow-sm"
+                  : "text-foreground hover:bg-secondary"
               )}
             >
               <item.icon className="mr-3 h-5 w-5" />

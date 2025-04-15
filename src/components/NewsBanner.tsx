@@ -22,7 +22,6 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
   
   useEffect(() => {
     const fetchNewsContent = async () => {
-      // Use a more generic approach to query the table without relying on type checking
       const { data, error } = await supabase
         .from('system_settings')
         .select('*')
@@ -31,16 +30,14 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
         
       if (data && !error) {
         try {
-          // Parse the JSON value
           const parsedSettings = JSON.parse(data.value) as BannerSettings;
           setBannerSettings(parsedSettings);
         } catch (e) {
-          // If parsing fails, use the string value as content with default settings
           setBannerSettings({
             title: 'Объявление',
             content: data.value,
-            backgroundColor: '#F2FCE2',
-            textColor: '#1A1F2C',
+            backgroundColor: '#F1F5F9',
+            textColor: '#334155',
             enabled: true
           });
         }
@@ -49,7 +46,6 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
     
     fetchNewsContent();
     
-    // Set up realtime subscription
     const channel = supabase
       .channel('system_settings_changes')
       .on('postgres_changes', {
@@ -60,16 +56,14 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
       }, (payload) => {
         if (payload.new) {
           try {
-            // Try to parse the new value as JSON
             const newSettings = JSON.parse((payload.new as any).value) as BannerSettings;
             setBannerSettings(newSettings);
           } catch (e) {
-            // If parsing fails, use the string value as content with default settings
             setBannerSettings({
               title: 'Объявление',
               content: (payload.new as any).value,
-              backgroundColor: '#F2FCE2',
-              textColor: '#1A1F2C',
+              backgroundColor: '#F1F5F9',
+              textColor: '#334155',
               enabled: true
             });
           }
@@ -88,28 +82,28 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
     <Collapsible 
       open={isOpen} 
       onOpenChange={setIsOpen}
-      className={`border rounded-lg overflow-hidden ${className}`}
+      className={`border shadow-sm rounded-lg overflow-hidden ${className}`}
       style={{ 
-        backgroundColor: `${bannerSettings.backgroundColor}20`, 
-        borderColor: `${bannerSettings.backgroundColor} 40` 
+        backgroundColor: `${bannerSettings.backgroundColor}10`, 
+        borderColor: `${bannerSettings.backgroundColor}30` 
       }}
     >
       <div className="flex items-center p-3 border-b" 
            style={{ 
-             backgroundColor: `${bannerSettings.backgroundColor}30`,
-             borderColor: `${bannerSettings.backgroundColor}40`,
+             backgroundColor: `${bannerSettings.backgroundColor}20`,
+             borderColor: `${bannerSettings.backgroundColor}30`,
              color: bannerSettings.textColor
            }}>
-        <InfoIcon className="h-4 w-4 mr-2" />
+        <InfoIcon className="h-4 w-4 mr-2 flex-shrink-0" />
         <span className="font-medium text-sm flex-1">{bannerSettings.title}</span>
-        {/* <CollapsibleTrigger asChild> */}
-          {/* <button className="p-1 rounded-full hover:bg-white/20 transition-colors">
+        <CollapsibleTrigger asChild>
+          <button className="p-1 rounded-full hover:bg-white/20 transition-colors">
             {isOpen ? 
               <ChevronUp className="h-4 w-4" /> : 
               <ChevronDown className="h-4 w-4" />
             }
-          </button> */}
-        {/* </CollapsibleTrigger> */}
+          </button>
+        </CollapsibleTrigger>
       </div>
       <CollapsibleContent>
         <div className="p-3 text-sm whitespace-pre-line" style={{ color: bannerSettings.textColor }}>
