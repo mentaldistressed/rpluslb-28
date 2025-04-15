@@ -142,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     toast({
       title: "выход выполнен",
-      description: "Вы успешно вышли из системы",
+      description: "вы успешно вышли из системы",
     });
   };
 

@@ -23,7 +23,7 @@ export default function Header() {
         <div className="flex items-center space-x-2">
           <div className="text-xl font-medium">
             <span className="font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">rplus</span>
-            <span className="text-muted-foreground ml-2 text-base font-normal">ЛКПО</span>
+            <span className="text-muted-foreground ml-2 text-base font-normal">» ЛКПО</span>
           </div>
         </div>
         

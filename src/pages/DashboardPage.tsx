@@ -62,7 +62,7 @@ export default function DashboardPage() {
         }
         
         // Placeholder for release count - would normally come from database
-        setReleaseCount(user.role === 'admin' ? 35 : 12);
+        setReleaseCount(user.role === 'admin' ? 0 : 0);
         
         // Get recent activities
         const fetchUserActivities = async () => {
@@ -186,8 +186,8 @@ export default function DashboardPage() {
             <Card className="card-shadow border-border/40 relative overflow-hidden">
               <div className="absolute inset-0 backdrop-blur-sm bg-white/30 z-10 flex flex-col items-center justify-center">
                 <Lock className="h-10 w-10 text-blue-400 mb-2" />
-                <p className="text-lg font-medium text-blue-800">Недоступно</p>
-                <p className="text-sm text-blue-600">Функционал в разработке</p>
+                <p className="text-lg font-medium text-blue-800">недоступно</p>
+                <p className="text-sm text-blue-600">функционал в разработке</p>
               </div>
               <CardHeader className="pb-2">
                 <div className="w-10 h-10 rounded-lg bg-accent/40 flex items-center justify-center mb-2">
@@ -286,7 +286,7 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="text-center py-4 text-muted-foreground">
-                    Нет недавних активностей
+                    нет недавних активностей
                   </div>
                 )}
               </CardContent>

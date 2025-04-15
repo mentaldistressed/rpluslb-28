@@ -96,14 +96,14 @@ export const NewsBanner = ({ className }: NewsBannerProps) => {
            }}>
         <InfoIcon className="h-4 w-4 mr-2 flex-shrink-0" />
         <span className="font-medium text-sm flex-1">{bannerSettings.title}</span>
-        <CollapsibleTrigger asChild>
+        {/* <CollapsibleTrigger asChild>
           <button className="p-1 rounded-full hover:bg-white/20 transition-colors">
             {isOpen ? 
               <ChevronUp className="h-4 w-4" /> : 
               <ChevronDown className="h-4 w-4" />
             }
           </button>
-        </CollapsibleTrigger>
+        </CollapsibleTrigger> */}
       </div>
       <CollapsibleContent>
         <div className="p-3 text-sm whitespace-pre-line" style={{ color: bannerSettings.textColor }}>

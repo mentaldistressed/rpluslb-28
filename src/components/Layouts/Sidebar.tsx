@@ -119,7 +119,7 @@ export default function Sidebar() {
       
       <div className="mt-auto pt-4 border-t border-border/50 text-xs text-muted-foreground px-3">
         <p>© {new Date().getFullYear()} rplus</p>
-        <p>ЛКПО, разработано @amirknyazev</p>
+        <p>ЛКПО, версия 1.1, разработано @amirknyazev</p>
       </div>
     </div>
   );

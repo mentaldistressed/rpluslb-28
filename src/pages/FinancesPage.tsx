@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Clock, PackageX, Bell, FileText, Lock } from "lucide-react";
 
 interface BannerSettings {
   title: string;
@@ -68,22 +70,51 @@ export default function SettingsPage() {
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">финансы</h1>
+        <h1 className="text-2xl font-bold">{isAdmin ? 'управление финансами' : 'мои финансы'}</h1>
       </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>денег нет, но вы держитесь...</CardTitle>
-            <CardDescription>
-              но скоро, наверное, появятся (не обещаем)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              страница находится в разработке
-            </p>
-          </CardContent>
-        </Card>
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <Bell className="h-5 w-5 text-blue-500" />
+          </div>
+          <div>
+            <h3 className="font-medium text-blue-800">скоро будет доступно</h3>
+            <p className="text-sm text-blue-600">работа над финансовой статистикой в активной фазе</p>
+          </div>
+        </div>
+      </div>
+
+      <Card className="border-border/40 overflow-hidden">
+        <CardHeader className="bg-secondary/30">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-secondary/50 rounded-full flex items-center justify-center">
+                <PackageX className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <CardTitle>функционал в разработке</CardTitle>
+            </div>
+            <Badge variant="outline" className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">
+              скоро
+            </Badge>
+          </div>
+          <CardDescription>
+            функционал финансовой статистики находится в стадии разработки и будет доступен в ближайшее время
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
+            <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
+            <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
+            <div className="flex justify-center mt-6">
+              {/* <p className="text-sm text-muted-foreground px-4 py-2 bg-muted/30 rounded-full">
+                каталог релизов будет доступен в ближайшем обновлении системы
+              </p> */}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
