@@ -7,6 +7,8 @@ import { Ticket, FileText, Landmark, CircleUserRound, Clock, ChevronRight, Trend
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ActivityItem, ActivityType } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface TicketStats {
   activeCount: number;
@@ -157,7 +159,7 @@ export default function DashboardPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="card-shadow border-border/40">
+            <Card className="card-shadow border-border/40 transition-colors duration-200">
               <CardHeader className="pb-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                   <Ticket className="h-5 w-5 text-primary" />
@@ -183,11 +185,11 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="card-shadow border-border/40 relative overflow-hidden">
-              <div className="absolute inset-0 backdrop-blur-sm bg-white/30 z-10 flex flex-col items-center justify-center">
-                <Lock className="h-10 w-10 text-blue-400 mb-2" />
-                <p className="text-lg font-medium text-blue-800">недоступно</p>
-                <p className="text-sm text-blue-600">функционал в разработке</p>
+            <Card className="card-shadow border-border/40 relative overflow-hidden transition-colors duration-200">
+              <div className="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-black/30 z-10 flex flex-col items-center justify-center">
+                <Lock className="h-10 w-10 text-blue-400 dark:text-blue-300 mb-2" />
+                <p className="text-lg font-medium text-blue-800 dark:text-blue-300">недоступно</p>
+                <p className="text-sm text-blue-600 dark:text-blue-400">функционал в разработке</p>
               </div>
               <CardHeader className="pb-2">
                 <div className="w-10 h-10 rounded-lg bg-accent/40 flex items-center justify-center mb-2">
@@ -212,7 +214,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="card-shadow border-border/40">
+            <Card className="card-shadow border-border/40 transition-colors duration-200">
               <CardHeader className="pb-2">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                   <Landmark className="h-5 w-5 text-primary" />
@@ -238,7 +240,7 @@ export default function DashboardPage() {
           </div>
           
           {isAdmin && (
-            <Card className="card-shadow border-border/40 bg-secondary/20">
+            <Card className="card-shadow border-border/40 bg-secondary/20 transition-colors duration-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CircleUserRound className="h-5 w-5" />
@@ -247,14 +249,14 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <div className="bg-card dark:bg-card p-4 rounded-lg shadow-sm transition-colors duration-200">
                     <p className="text-muted-foreground text-sm mb-1">всего пользователей</p>
                     <p className="text-2xl font-medium">{userStats.totalCount}</p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm relative overflow-hidden">
-                    <div className="absolute inset-0 backdrop-blur-sm bg-white/30 z-10 flex flex-col items-center justify-center">
-                      <Lock className="h-8 w-8 text-blue-400 mb-1" />
-                      <p className="text-sm text-blue-800">Недоступно</p>
+                  <div className="bg-card dark:bg-card p-4 rounded-lg shadow-sm relative overflow-hidden transition-colors duration-200">
+                    <div className="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-black/30 z-10 flex flex-col items-center justify-center">
+                      <Lock className="h-8 w-8 text-blue-400 dark:text-blue-300 mb-1" />
+                      <p className="text-sm text-blue-800 dark:text-blue-300">Недоступно</p>
                     </div>
                     <p className="text-muted-foreground text-sm mb-1">активных</p>
                     <p className="text-2xl font-medium">{userStats.activeCount}</p>
@@ -265,7 +267,7 @@ export default function DashboardPage() {
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="card-shadow border-border/40">
+            <Card className="card-shadow border-border/40 transition-colors duration-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
@@ -276,7 +278,10 @@ export default function DashboardPage() {
                 {activities.length > 0 ? (
                   <div className="space-y-3">
                     {activities.map((activity, index) => (
-                      <div key={activity.id} className={index < activities.length - 1 ? "border-b pb-3 border-border/40" : ""}>
+                      <div key={activity.id} className={cn(
+                        index < activities.length - 1 ? "border-b pb-3 border-border/40" : "",
+                        "transition-colors duration-200"
+                      )}>
                         <Link to={`/tickets/${activity.ticketId}`} className="hover:underline">
                           <p className="text-sm font-medium">{getActivityText(activity)}</p>
                           <p className="text-xs text-muted-foreground">{activity.date}, {activity.time}</p>
@@ -292,7 +297,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="card-shadow border-border/40">
+            <Card className="card-shadow border-border/40 transition-colors duration-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -300,7 +305,7 @@ export default function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-center h-[180px] bg-secondary/30 rounded-lg">
+                <div className="flex items-center justify-center h-[180px] bg-secondary/30 dark:bg-secondary/20 rounded-lg transition-colors duration-200">
                   <p className="text-muted-foreground">аналитика будет доступна скоро</p>
                 </div>
               </CardContent>

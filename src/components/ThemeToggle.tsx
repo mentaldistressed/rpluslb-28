@@ -15,22 +15,24 @@ export function ThemeToggle() {
       className={cn(
         "relative h-9 w-9 rounded-full transition-all duration-300",
         "border-border/50 bg-background hover:bg-secondary",
-        "dark:hover:bg-secondary dark:border-border/30 dark:hover:border-border/50"
+        "dark:hover:bg-secondary dark:border-border/30 dark:hover:border-border/50",
+        "overflow-hidden"
       )}
+      aria-label="Переключить тему"
     >
       <span className="sr-only">Переключить тему</span>
       <span 
         className={cn(
-          "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
-          theme === "dark" ? "opacity-0" : "opacity-100"
+          "absolute inset-0 flex items-center justify-center transition-all duration-500 transform",
+          theme === "dark" ? "translate-y-full opacity-0" : "translate-y-0 opacity-100"
         )}
       >
         <Sun className="h-5 w-5 text-amber-500" />
       </span>
       <span 
         className={cn(
-          "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
-          theme === "light" ? "opacity-0" : "opacity-100"
+          "absolute inset-0 flex items-center justify-center transition-all duration-500 transform",
+          theme === "light" ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
         )}
       >
         <Moon className="h-5 w-5 text-blue-400" />

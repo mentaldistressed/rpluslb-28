@@ -80,4 +80,18 @@
   .glass-effect {
     @apply bg-white/90 dark:bg-black/50 backdrop-blur-md border border-white/40 dark:border-white/10;
   }
+
+  /* Add animation for theme change */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0.4;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 }

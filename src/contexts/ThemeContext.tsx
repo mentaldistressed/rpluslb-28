@@ -43,9 +43,19 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
+    
+    // Add transition class before changing theme
+    root.classList.add('transition-colors', 'duration-300');
+    
+    // Small delay to ensure transition is applied
+    const timeoutId = setTimeout(() => {
+      root.classList.remove("light", "dark");
+      root.classList.add(theme);
+    }, 10);
+    
     localStorage.setItem(storageKey, theme);
+    
+    return () => clearTimeout(timeoutId);
   }, [theme, storageKey]);
 
   // Добавляем слушатель изменений системной темы
