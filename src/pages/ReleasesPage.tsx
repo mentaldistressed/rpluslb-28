@@ -25,7 +25,7 @@ export default function ReleasesPage() {
           </div>
           <div>
             <h3 className="font-medium text-blue-800">скоро будет доступно</h3>
-            <p className="text-sm text-blue-600">работа над каталогом релизов в активной фазе</p>
+            <p className="text-sm text-blue-600">работа над каталогом релизов находится в активной фазе</p>
           </div>
         </div>
       </div>

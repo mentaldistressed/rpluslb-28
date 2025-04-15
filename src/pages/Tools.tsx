@@ -70,7 +70,7 @@ export default function SettingsPage() {
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{isAdmin ? 'управление финансами' : 'мои финансы'}</h1>
+        <h1 className="text-2xl font-bold">{isAdmin ? 'инструменты' : 'инструменты'}</h1>
       </div>
 
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-4 mb-6">
@@ -80,7 +80,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <h3 className="font-medium text-blue-800">скоро будет доступно</h3>
-            <p className="text-sm text-blue-600">работа над финансовой статистикой находится в активной фазе</p>
+            <p className="text-sm text-blue-600">работа над полезными инструментами находится в активной фазе</p>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function SettingsPage() {
             </Badge>
           </div>
           <CardDescription>
-            финансовая статистика находится в стадии разработки и будет доступна в ближайшее время
+            инструменты находятся в стадии разработки и будут доступны в ближайшее время
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">

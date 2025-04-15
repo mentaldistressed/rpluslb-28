@@ -204,7 +204,7 @@ export default function DashboardPage() {
                     <p className="text-3xl font-semibold">{releaseCount}</p>
                     <p className="text-sm text-muted-foreground">всего релизов</p>
                   </div>
-                  <Link to="/releases">
+                  <Link to="/dashboard">
                     <Button variant="ghost" size="sm" className="text-primary">
                       перейти 
                       <ChevronRight className="h-4 w-4" />
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                     <p className="text-3xl font-semibold">₽0</p>
                     <p className="text-sm text-muted-foreground">к выплате</p>
                   </div>
-                  <Link to="/finances">
+                  <Link to="/dashboard">
                     <Button variant="ghost" size="sm" className="text-primary">
                       перейти 
                       <ChevronRight className="h-4 w-4" />

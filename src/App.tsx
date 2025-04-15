@@ -17,6 +17,7 @@ import FinancesPage from "@/pages/FinancesPage";
 import MaintenancePage from "@/pages/MaintenancePage";
 import ReleasesPage from "@/pages/ReleasesPage";
 import DashboardPage from "@/pages/DashboardPage";
+import ToolsPage from "@/pages/tools";
 
 // Import Russian locale for date-fns
 import { ru } from "date-fns/locale";
@@ -90,12 +91,21 @@ const App = () => (
                     </ProtectedRoute>
                   } 
                 />
-                
+
                 <Route 
                   path="/tickets" 
                   element={
                     <ProtectedRoute>
                       <TicketsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+
+                <Route 
+                  path="/tools" 
+                  element={
+                    <ProtectedRoute>
+                      <ToolsPage />
                     </ProtectedRoute>
                   } 
                 />

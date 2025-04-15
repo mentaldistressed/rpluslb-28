@@ -2,7 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useTickets } from "@/contexts/TicketsContext";
 import { Button } from "@/components/ui/button";
-import { Ticket, Users, Plus, Settings, Landmark, Library, Home } from "lucide-react";
+import { Ticket, Users, Plus, Settings, Landmark, Library, Home, ListMusic, BookText, Hammer } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -29,12 +29,12 @@ export default function Sidebar() {
         icon: Home,
         active: location.pathname === '/dashboard'
       },
-      {
-        name: "мой каталог",
-        href: "/releases",
-        icon: Library,
-        active: location.pathname.startsWith('/releases')
-      },
+      // {
+      //   name: "мой каталог",
+      //   href: "/releases",
+      //   icon: Library,
+      //   active: location.pathname.startsWith('/releases')
+      // },
       {
         name: "мои тикеты",
         href: "/tickets",
@@ -46,6 +46,12 @@ export default function Sidebar() {
         href: "/finances",
         icon: Landmark,
         active: location.pathname.startsWith('/finances')
+      },
+      {
+        name: "инструменты",
+        href: "/tools",
+        icon: Hammer,
+        active: location.pathname.startsWith('/tools')
       }
     ] : []),
     ...(isAdmin ? [
@@ -55,12 +61,12 @@ export default function Sidebar() {
         icon: Home,
         active: location.pathname === '/dashboard'
       },
-      {
-        name: "управление каталогом",
-        href: "/releases",
-        icon: Library,
-        active: location.pathname.startsWith('/releases')
-      },
+        // {
+        //   name: "управление каталогом",
+        //   href: "/releases",
+        //   icon: Library,
+        //   active: location.pathname.startsWith('/releases')
+        // },
       {
         name: "управление тикетами",
         href: "/tickets",
@@ -80,6 +86,12 @@ export default function Sidebar() {
         active: location.pathname.startsWith('/finances')
       },
       {
+        name: "инструменты",
+        href: "/tools",
+        icon: Hammer,
+        active: location.pathname.startsWith('/tools')
+      },
+      {
         name: "настройки",
         href: "/settings",
         icon: Settings,
@@ -95,7 +107,7 @@ export default function Sidebar() {
           <Link to="/tickets/new">
             <Button className="w-full justify-start font-medium shadow-sm group" variant="default">
               <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
-              <span>создать тикет</span>
+              <span>создать новый тикет</span>
             </Button>
           </Link>
         )}
@@ -120,8 +132,9 @@ export default function Sidebar() {
       </div>
       
       <div className="mt-auto pt-4 border-t border-border/50 text-xs text-muted-foreground px-3">
+        <p>v1.1.6</p>
+        <p>обновление ПО от: 2024-04-15</p>
         <p>© {new Date().getFullYear()} rplus</p>
-        <p>ЛКПО, версия 1.1, разработано @amirknyazev</p>
       </div>
     </div>
   );

@@ -62,18 +62,20 @@ export default function TicketsPage() {
 
   if (!user) return null;
 
+  const isAdmin = user.role === 'admin';
+
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">тикеты</h1>
-        {user.role === 'sublabel' && (
+      <h1 className="text-2xl font-bold">{isAdmin ? 'управление тикетами' : 'мои тикеты'}</h1>
+        {/* {user.role === 'sublabel' && (
           <Link to="/tickets/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               новый тикет
             </Button>
           </Link>
-        )}
+        )} */}
       </div>
       
       <div className="flex flex-col sm:flex-row gap-4">
@@ -151,14 +153,14 @@ export default function TicketsPage() {
           <h3 className="text-lg font-medium">тикетов не найдено</h3>
           <p className="text-muted-foreground mt-1">нет тикетов, соответствующих заданным критериям</p>
           
-          {user.role === 'sublabel' && (
+          {/* {user.role === 'sublabel' && (
             <Link to="/tickets/new" className="mt-4">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 создать новый тикет
               </Button>
             </Link>
-          )}
+          )} */}
         </div>
       )}
     </div>
