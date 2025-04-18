@@ -1,0 +1,227 @@
+
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Download, Music, Pause, Play, RotateCcw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface SyncedLine {
+  text: string;
+  time: number;
+}
+
+interface LyricsSyncData {
+  audioUrl: string;
+  artist: string;
+  title: string;
+  lyrics: string;
+}
+
+export default function LyricsSyncEditor() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentLine, setCurrentLine] = useState(0);
+  const [syncedLines, setSyncedLines] = useState<SyncedLine[]>([]);
+  const [syncData, setSyncData] = useState<LyricsSyncData | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const linesRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('lyricsSyncData');
+    if (!storedData) {
+      navigate('/tools/lyrics-sync');
+      return;
+    }
+
+    const data = JSON.parse(storedData) as LyricsSyncData;
+    setSyncData(data);
+    linesRef.current = data.lyrics.split('\n').filter(line => line.trim());
+  }, [navigate]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && isPlaying && currentLine < linesRef.current.length) {
+        e.preventDefault();
+        const time = audioRef.current?.currentTime || 0;
+        setSyncedLines(prev => [...prev, {
+          text: linesRef.current[currentLine],
+          time
+        }]);
+        setCurrentLine(prev => prev + 1);
+
+        if (currentLine === linesRef.current.length - 1) {
+          setIsPlaying(false);
+          audioRef.current?.pause();
+          toast({
+            title: "синхронизация завершена",
+            description: "теперь вы можете скачать результат"
+          });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentLine, isPlaying, toast]);
+
+  const togglePlayback = () => {
+    if (isPlaying) {
+      audioRef.current?.pause();
+    } else {
+      audioRef.current?.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const resetSync = () => {
+    setCurrentLine(0);
+    setSyncedLines([]);
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.pause();
+    }
+  };
+
+  const generateTTML = () => {
+    const ttml = `<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml">
+  <head>
+    <metadata>
+      <ttm:title>${syncData?.title}</ttm:title>
+      <ttm:desc>Lyrics for ${syncData?.artist} - ${syncData?.title}</ttm:desc>
+    </metadata>
+  </head>
+  <body>
+    <div>
+      ${syncedLines.map((line, index) => {
+        const nextTime = syncedLines[index + 1]?.time || line.time + 5;
+        return `<p begin="${line.time.toFixed(3)}s" end="${nextTime.toFixed(3)}s">${line.text}</p>`;
+      }).join('\n      ')}
+    </div>
+  </body>
+</tt>`;
+
+    const blob = new Blob([ttml], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${syncData?.artist} - ${syncData?.title}.ttml`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const generateLRC = () => {
+    const lrc = `[ar:${syncData?.artist}]
+[ti:${syncData?.title}]
+[by:Created with Lovable]
+
+${syncedLines.map(line => {
+  const time = new Date(line.time * 1000).toISOString().substr(14, 5);
+  const ms = Math.floor((line.time % 1) * 100);
+  return `[${time}.${ms}]${line.text}`;
+}).join('\n')}`;
+
+    const blob = new Blob([lrc], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${syncData?.artist} - ${syncData?.title}.lrc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  if (!syncData) return null;
+
+  const progress = (currentLine / linesRef.current.length) * 100;
+
+  return (
+    <div className="container max-w-4xl mx-auto py-6 space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Music className="h-5 w-5" />
+            синхронизация текста
+          </CardTitle>
+          <CardDescription>
+            нажимайте пробел в момент начала каждой строки текста
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center gap-4">
+            <audio ref={audioRef} src={syncData.audioUrl} onEnded={() => setIsPlaying(false)} />
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={togglePlayback}
+              disabled={currentLine === linesRef.current.length}
+            >
+              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={resetSync}
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+            <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="text-lg font-medium">
+              {syncData.artist} - {syncData.title}
+            </div>
+
+            <div className="space-y-2">
+              {linesRef.current.map((line, index) => (
+                <div 
+                  key={index}
+                  className={`p-2 rounded transition-colors ${
+                    index === currentLine 
+                      ? "bg-primary text-primary-foreground" 
+                      : index < currentLine 
+                        ? "text-muted-foreground"
+                        : ""
+                  }`}
+                >
+                  {line}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {currentLine === linesRef.current.length && (
+            <div className="flex gap-4">
+              <Button 
+                className="flex-1"
+                onClick={generateTTML}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                скачать TTML
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={generateLRC}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                скачать LRC
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

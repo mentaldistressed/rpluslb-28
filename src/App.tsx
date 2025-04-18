@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -5,6 +6,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TicketsProvider } from "@/contexts/TicketsContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import MainLayout from "@/components/Layouts/MainLayout";
+import { lazy as ReactLazy, Suspense } from 'react';
 
 import LoginPage from "@/pages/LoginPage";
 import TicketsPage from "@/pages/TicketsPage";
@@ -17,10 +19,11 @@ import FinancesPage from "@/pages/FinancesPage";
 import MaintenancePage from "@/pages/MaintenancePage";
 import ReleasesPage from "@/pages/ReleasesPage";
 import DashboardPage from "@/pages/DashboardPage";
-import ToolsPage from "@/pages/tools";
 
-// Import Russian locale for date-fns
-import { ru } from "date-fns/locale";
+// Lazy-loaded components
+const ToolsPage = ReactLazy(() => import('@/pages/tools'));
+const LyricsSyncPage = ReactLazy(() => import('@/pages/tools/lyrics-sync'));
+const LyricsSyncEditor = ReactLazy(() => import('@/pages/tools/lyrics-sync/editor'));
 
 const queryClient = new QueryClient();
 
@@ -105,7 +108,31 @@ const App = () => (
                   path="/tools" 
                   element={
                     <ProtectedRoute>
-                      <ToolsPage />
+                      <Suspense fallback={<div>загрузка...</div>}>
+                        <ToolsPage />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="/tools/lyrics-sync" 
+                  element={
+                    <ProtectedRoute>
+                      <Suspense fallback={<div>загрузка...</div>}>
+                        <LyricsSyncPage />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="/tools/lyrics-sync/editor" 
+                  element={
+                    <ProtectedRoute>
+                      <Suspense fallback={<div>загрузка...</div>}>
+                        <LyricsSyncEditor />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
