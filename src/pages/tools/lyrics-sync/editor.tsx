@@ -1,10 +1,12 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider"; 
-import { Music, Pause, Play, RotateCcw, Download, MinusCircle, RefreshCcw } from "lucide-react";
+import { Music, Pause, Play, RotateCcw, Download, MinusCircle, RefreshCcw, Volume2, VolumeX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 interface SyncedLine {
   text: string;
@@ -27,8 +29,12 @@ export default function LyricsSyncEditor() {
   const [syncData, setSyncData] = useState<LyricsSyncData | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(100);
+  const [autoScroll, setAutoScroll] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
   const linesRef = useRef<string[]>([]);
+  const currentLineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const storedData = sessionStorage.getItem('lyricsSyncData');
@@ -74,12 +80,25 @@ export default function LyricsSyncEditor() {
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('loadedmetadata', () => setDuration(audio.duration));
+    audio.addEventListener('loadedmetadata', () => {
+      setDuration(audio.duration);
+      audio.volume = volume / 100;
+    });
     
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
     };
-  }, []);
+  }, [volume]);
+
+  // Scroll to current line when it changes
+  useEffect(() => {
+    if (autoScroll && currentLineRef.current) {
+      currentLineRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  }, [currentLine, autoScroll]);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -89,10 +108,20 @@ export default function LyricsSyncEditor() {
   };
 
   const togglePlayback = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
     if (isPlaying) {
-      audioRef.current?.pause();
+      audio.pause();
     } else {
-      audioRef.current?.play();
+      audio.play().catch(error => {
+        console.error("Error playing audio:", error);
+        toast({
+          title: "ошибка воспроизведения",
+          description: "не удалось воспроизвести аудио файл",
+          variant: "destructive"
+        });
+      });
     }
     setIsPlaying(!isPlaying);
   };
@@ -117,6 +146,21 @@ export default function LyricsSyncEditor() {
   const handleSliderChange = (value: number[]) => {
     if (audioRef.current) {
       audioRef.current.currentTime = value[0];
+    }
+  };
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleVolumeChange = (value: number[]) => {
+    const newVolume = value[0];
+    setVolume(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume / 100;
     }
   };
 
@@ -186,6 +230,15 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Audio Element */}
+          <audio 
+            ref={audioRef} 
+            src={syncData.audioUrl} 
+            preload="metadata"
+            onEnded={() => setIsPlaying(false)}
+          />
+
+          {/* Time Slider */}
           <div className="space-y-4">
             <div className="flex items-center justify-between text-sm">
               <span>{formatTime(currentTime)}</span>
@@ -196,50 +249,81 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
               <Slider
                 value={[currentTime]}
                 min={0}
-                max={duration}
+                max={duration || 100}
                 step={0.1}
                 onValueChange={handleSliderChange}
                 className="w-full"
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={togglePlayback}
-                disabled={currentLine === linesRef.current.length}
-              >
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={resetCurrentLine}
-                className="gap-2"
-              >
-                <MinusCircle className="h-4 w-4" />
-                сбросить строку
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={resetSync}
-                className="gap-2"
-              >
-                <RefreshCcw className="h-4 w-4" />
-                сбросить все
-              </Button>
+            {/* Controls Row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={togglePlayback}
+                  disabled={currentLine === linesRef.current.length}
+                >
+                  {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={resetCurrentLine}
+                  className="gap-2"
+                >
+                  <MinusCircle className="h-4 w-4" />
+                  сбросить строку
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={resetSync}
+                  className="gap-2"
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                  сбросить все
+                </Button>
+              </div>
+              
+              {/* Volume Controls */}
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={toggleMute}
+                >
+                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </Button>
+                <Slider
+                  value={[volume]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={handleVolumeChange}
+                  className="w-24"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">автопрокрутка</span>
+                  <Switch 
+                    checked={autoScroll}
+                    onCheckedChange={setAutoScroll}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* Track info and Lyrics */}
           <div className="space-y-4">
             <div className="text-lg font-medium">
               {syncData.artist} - {syncData.title}
             </div>
 
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 max-h-80 overflow-y-auto p-2 border rounded-md">
               {linesRef.current.map((line, index) => (
                 <div 
                   key={index}
+                  ref={index === currentLine ? currentLineRef : undefined}
                   className={`p-2 rounded transition-colors ${
                     index === currentLine 
                       ? "bg-primary text-primary-foreground" 
@@ -254,6 +338,7 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
             </div>
           </div>
 
+          {/* Export Buttons */}
           {currentLine === linesRef.current.length && (
             <div className="flex gap-4">
               <Button 
