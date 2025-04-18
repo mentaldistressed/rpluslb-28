@@ -1,9 +1,9 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Music, Pause, Play, RotateCcw } from "lucide-react";
+import { Slider } from "@/components/ui/slider"; 
+import { Music, Pause, Play, RotateCcw, Download, MinusCircle, RefreshCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SyncedLine {
@@ -25,6 +25,8 @@ export default function LyricsSyncEditor() {
   const [currentLine, setCurrentLine] = useState(0);
   const [syncedLines, setSyncedLines] = useState<SyncedLine[]>([]);
   const [syncData, setSyncData] = useState<LyricsSyncData | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const linesRef = useRef<string[]>([]);
 
@@ -66,6 +68,26 @@ export default function LyricsSyncEditor() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [currentLine, isPlaying, toast]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', () => setDuration(audio.duration));
+    
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+    };
+  }, []);
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    const milliseconds = Math.floor((time % 1) * 1000);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+  };
+
   const togglePlayback = () => {
     if (isPlaying) {
       audioRef.current?.pause();
@@ -83,6 +105,38 @@ export default function LyricsSyncEditor() {
       audioRef.current.currentTime = 0;
       audioRef.current.pause();
     }
+  };
+
+  const resetCurrentLine = () => {
+    if (currentLine > 0) {
+      setCurrentLine(prev => prev - 1);
+      setSyncedLines(prev => prev.slice(0, -1));
+    }
+  };
+
+  const handleSliderChange = (value: number[]) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = value[0];
+    }
+  };
+
+  const generateLRC = () => {
+    const lrc = `[ar:${syncData?.artist}]
+[ti:${syncData?.title}]
+[length:${formatTime(duration)}]
+[re:Lovable Lyrics Editor]
+
+${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`;
+
+    const blob = new Blob([lrc], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${syncData?.artist} - ${syncData?.title}.lrc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const generateTTML = () => {
@@ -115,28 +169,6 @@ export default function LyricsSyncEditor() {
     URL.revokeObjectURL(url);
   };
 
-  const generateLRC = () => {
-    const lrc = `[ar:${syncData?.artist}]
-[ti:${syncData?.title}]
-[by:Created with Lovable]
-
-${syncedLines.map(line => {
-  const time = new Date(line.time * 1000).toISOString().substr(14, 5);
-  const ms = Math.floor((line.time % 1) * 100);
-  return `[${time}.${ms}]${line.text}`;
-}).join('\n')}`;
-
-    const blob = new Blob([lrc], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${syncData?.artist} - ${syncData?.title}.lrc`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   if (!syncData) return null;
 
   const progress = (currentLine / linesRef.current.length) * 100;
@@ -154,28 +186,48 @@ ${syncedLines.map(line => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <audio ref={audioRef} src={syncData.audioUrl} onEnded={() => setIsPlaying(false)} />
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={togglePlayback}
-              disabled={currentLine === linesRef.current.length}
-            >
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={resetSync}
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-            <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${progress}%` }}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+            
+            <div className="relative">
+              <Slider
+                value={[currentTime]}
+                min={0}
+                max={duration}
+                step={0.1}
+                onValueChange={handleSliderChange}
+                className="w-full"
               />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={togglePlayback}
+                disabled={currentLine === linesRef.current.length}
+              >
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={resetCurrentLine}
+                className="gap-2"
+              >
+                <MinusCircle className="h-4 w-4" />
+                сбросить строку
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={resetSync}
+                className="gap-2"
+              >
+                <RefreshCcw className="h-4 w-4" />
+                сбросить все
+              </Button>
             </div>
           </div>
 
@@ -184,7 +236,7 @@ ${syncedLines.map(line => {
               {syncData.artist} - {syncData.title}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-0.5">
               {linesRef.current.map((line, index) => (
                 <div 
                   key={index}
@@ -196,7 +248,7 @@ ${syncedLines.map(line => {
                         : ""
                   }`}
                 >
-                  {line}
+                  {syncedLines[index] ? `[${formatTime(syncedLines[index].time)}] ` : ''}{line}
                 </div>
               ))}
             </div>
