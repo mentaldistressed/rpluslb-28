@@ -17,11 +17,11 @@ import SettingsPage from "@/pages/SettingsPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import FinancesPage from "@/pages/FinancesPage";
 import MaintenancePage from "@/pages/MaintenancePage";
-import ReleasesPage from "@/pages/ReleasesPage";
 import DashboardPage from "@/pages/DashboardPage";
+import Casino from "@/pages/Casino";
 
 // Lazy-loaded components
-const ToolsPage = ReactLazy(() => import('@/pages/tools'));
+const ToolsPage = ReactLazy(() => import('@/pages/tools/'));
 const LyricsSyncPage = ReactLazy(() => import('@/pages/tools/sync'));
 const LyricsSyncEditor = ReactLazy(() => import('@/pages/tools/sync/editor'));
 
@@ -105,12 +105,19 @@ const App = () => (
                 />
 
                 <Route 
+                  path="/casino" 
+                  element={
+                    <ProtectedRoute>
+                      <Casino />
+                    </ProtectedRoute>
+                  } 
+                />
+
+                <Route 
                   path="/tools" 
                   element={
                     <ProtectedRoute>
-                      <Suspense fallback={<div>загрузка...</div>}>
                         <ToolsPage />
-                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -133,15 +140,6 @@ const App = () => (
                       <Suspense fallback={<div>загрузка...</div>}>
                         <LyricsSyncEditor />
                       </Suspense>
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/releases" 
-                  element={
-                    <ProtectedRoute>
-                      <ReleasesPage />
                     </ProtectedRoute>
                   } 
                 />

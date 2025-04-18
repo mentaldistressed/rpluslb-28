@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 export default function ToolsPage() {
   return (
-    <div className="container max-w-4xl mx-auto py-6">
+    <div className="animate-fade-in container max-w-4xl mx-auto py-6">
       <h1 className="text-2xl font-bold mb-6">инструменты</h1>
       
       <div className="grid gap-6">

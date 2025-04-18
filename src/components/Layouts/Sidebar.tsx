@@ -2,10 +2,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useTickets } from "@/contexts/TicketsContext";
 import { Button } from "@/components/ui/button";
-import { Ticket, Users, Plus, Settings, Landmark, Library, Home, ListMusic, BookText, Hammer } from "lucide-react";
+import { Ticket, Users, Plus, Settings, Landmark, Home, Hammer, Coins } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
+import { Badge } from "@/components/ui/badge";
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -29,12 +30,6 @@ export default function Sidebar() {
         icon: Home,
         active: location.pathname === '/dashboard'
       },
-      // {
-      //   name: "мой каталог",
-      //   href: "/releases",
-      //   icon: Library,
-      //   active: location.pathname.startsWith('/releases')
-      // },
       {
         name: "мои тикеты",
         href: "/tickets",
@@ -52,7 +47,13 @@ export default function Sidebar() {
         href: "/tools",
         icon: Hammer,
         active: location.pathname.startsWith('/tools')
-      }
+      },
+      {
+        name: "казино",
+        href: "/casino",
+        icon: Coins,
+        active: location.pathname.startsWith('/casino')
+      },
     ] : []),
     ...(isAdmin ? [
       {
@@ -61,12 +62,6 @@ export default function Sidebar() {
         icon: Home,
         active: location.pathname === '/dashboard'
       },
-        // {
-        //   name: "управление каталогом",
-        //   href: "/releases",
-        //   icon: Library,
-        //   active: location.pathname.startsWith('/releases')
-        // },
       {
         name: "управление тикетами",
         href: "/tickets",
@@ -96,6 +91,12 @@ export default function Sidebar() {
         href: "/settings",
         icon: Settings,
         active: location.pathname.startsWith('/settings')
+      },
+      {
+        name: "казино",
+        href: "/casino",
+        icon: Coins,
+        active: location.pathname.startsWith('/casino')
       }
     ] : []),
   ];
@@ -133,7 +134,7 @@ export default function Sidebar() {
       
       <div className="mt-auto pt-4 border-t border-border/50 text-xs text-muted-foreground px-3">
         <p>v1.1.2.1</p>
-        <p>последнее обновление системы: 2025-04-15 22:51</p>
+        <p>последнее обновление системы: 2025-04-18 18:08</p>
       </div>
     </div>
   );

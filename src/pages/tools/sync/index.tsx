@@ -99,7 +99,7 @@ export default function LyricsSyncPage() {
                   <div className="flex flex-col items-center gap-2">
                     <Upload className="h-6 w-6" />
                     <span>
-                      {formData.audioFile ? formData.audioFile.name : "нажмите чтобы загрузить"}
+                      {formData.audioFile ? formData.audioFile.name : "нажмите, чтобы загрузить"}
                     </span>
                   </div>
                 </Button>
