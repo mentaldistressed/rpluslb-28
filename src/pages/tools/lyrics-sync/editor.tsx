@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider"; 
-import { Music, Pause, Play, RotateCcw, Download, MinusCircle, RefreshCcw, Volume2, VolumeX } from "lucide-react";
+import { Music, Pause, Play, RotateCcw, Download, MinusCircle, RefreshCcw, Volume2, VolumeX, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface SyncedLine {
   text: string;
@@ -32,6 +33,7 @@ export default function LyricsSyncEditor() {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(100);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const linesRef = useRef<string[]>([]);
   const currentLineRef = useRef<HTMLDivElement>(null);
@@ -79,14 +81,27 @@ export default function LyricsSyncEditor() {
     if (!audio) return;
 
     const updateTime = () => setCurrentTime(audio.currentTime);
-    audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('loadedmetadata', () => {
+    
+    const handleLoadedMetadata = () => {
       setDuration(audio.duration);
       audio.volume = volume / 100;
-    });
+      setAudioError(null);
+    };
+    
+    const handleError = (e: Event) => {
+      console.error("Error playing audio:", e);
+      setAudioError("не удалось воспроизвести аудио файл");
+      setIsPlaying(false);
+    };
+    
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('error', handleError);
     
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('error', handleError);
     };
   }, [volume]);
 
@@ -113,17 +128,27 @@ export default function LyricsSyncEditor() {
     
     if (isPlaying) {
       audio.pause();
+      setIsPlaying(false);
     } else {
-      audio.play().catch(error => {
-        console.error("Error playing audio:", error);
-        toast({
-          title: "ошибка воспроизведения",
-          description: "не удалось воспроизвести аудио файл",
-          variant: "destructive"
-        });
-      });
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setAudioError(null);
+          })
+          .catch(error => {
+            console.error("Error playing audio:", error);
+            setAudioError("не удалось воспроизвести аудио файл");
+            setIsPlaying(false);
+            toast({
+              title: "ошибка воспроизведения",
+              description: "не удалось воспроизвести аудио файл",
+              variant: "destructive"
+            });
+          });
+      }
     }
-    setIsPlaying(!isPlaying);
   };
 
   const resetSync = () => {
@@ -165,8 +190,10 @@ export default function LyricsSyncEditor() {
   };
 
   const generateLRC = () => {
-    const lrc = `[ar:${syncData?.artist}]
-[ti:${syncData?.title}]
+    if (!syncData) return;
+    
+    const lrc = `[ar:${syncData.artist}]
+[ti:${syncData.title}]
 [length:${formatTime(duration)}]
 [re:Lovable Lyrics Editor]
 
@@ -176,7 +203,7 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${syncData?.artist} - ${syncData?.title}.lrc`;
+    a.download = `${syncData.artist} - ${syncData.title}.lrc`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -184,12 +211,14 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
   };
 
   const generateTTML = () => {
+    if (!syncData) return;
+    
     const ttml = `<?xml version="1.0" encoding="UTF-8"?>
 <tt xmlns="http://www.w3.org/ns/ttml">
   <head>
     <metadata>
-      <ttm:title>${syncData?.title}</ttm:title>
-      <ttm:desc>Lyrics for ${syncData?.artist} - ${syncData?.title}</ttm:desc>
+      <ttm:title>${syncData.title}</ttm:title>
+      <ttm:desc>Lyrics for ${syncData.artist} - ${syncData.title}</ttm:desc>
     </metadata>
   </head>
   <body>
@@ -206,7 +235,7 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${syncData?.artist} - ${syncData?.title}.ttml`;
+    a.download = `${syncData.artist} - ${syncData.title}.ttml`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -234,9 +263,18 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
           <audio 
             ref={audioRef} 
             src={syncData.audioUrl} 
-            preload="metadata"
+            preload="auto"
             onEnded={() => setIsPlaying(false)}
           />
+
+          {/* Error Alert */}
+          {audioError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>ошибка воспроизведения</AlertTitle>
+              <AlertDescription>{audioError}</AlertDescription>
+            </Alert>
+          )}
 
           {/* Time Slider */}
           <div className="space-y-4">
@@ -263,7 +301,7 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
                   variant="outline" 
                   size="icon" 
                   onClick={togglePlayback}
-                  disabled={currentLine === linesRef.current.length}
+                  disabled={currentLine === linesRef.current.length || !!audioError}
                 >
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
