@@ -8,6 +8,7 @@ import { Music, Pause, Play, RotateCcw, Download, MinusCircle, RefreshCcw, Volum
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SyncedLine {
   text: string;
@@ -37,6 +38,7 @@ export default function LyricsSyncEditor() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const linesRef = useRef<string[]>([]);
   const currentLineRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const storedData = sessionStorage.getItem('lyricsSyncData');
@@ -80,7 +82,11 @@ export default function LyricsSyncEditor() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateTime = () => {
+      if (audio && !audio.paused) {
+        setCurrentTime(audio.currentTime);
+      }
+    };
     
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
@@ -104,6 +110,27 @@ export default function LyricsSyncEditor() {
       audio.removeEventListener('error', handleError);
     };
   }, [volume]);
+
+  // Update timer manually to ensure UI updates even if audio timeupdate events are inconsistent
+  useEffect(() => {
+    if (isPlaying) {
+      timerRef.current = window.setInterval(() => {
+        if (audioRef.current && !audioRef.current.paused) {
+          setCurrentTime(audioRef.current.currentTime);
+        }
+      }, 100); // Update every 100ms for smooth display
+    } else if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    return () => {
+      if (timerRef.current) {
+        window.clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isPlaying]);
 
   // Scroll to current line when it changes
   useEffect(() => {
@@ -171,6 +198,7 @@ export default function LyricsSyncEditor() {
   const handleSliderChange = (value: number[]) => {
     if (audioRef.current) {
       audioRef.current.currentTime = value[0];
+      setCurrentTime(value[0]); // Update immediately for smoother UI
     }
   };
 
@@ -248,17 +276,89 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
 
   return (
     <div className="container max-w-4xl mx-auto py-6 space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Music className="h-5 w-5" />
-            синхронизация текста
-          </CardTitle>
-          <CardDescription>
-            нажимайте пробел в момент начала каждой строки текста
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <Card className="bg-slate-950 border-slate-900 text-white overflow-hidden">
+        <CardContent className="p-0">
+          {/* Time Display Bar */}
+          <div className="relative bg-slate-950 p-0">
+            <div className="flex justify-between p-4 text-slate-200">
+              <div>{formatTime(currentTime)}</div>
+              <div>{formatTime(duration)}</div>
+            </div>
+            
+            {/* Progress Indicator */}
+            <div className="relative px-4 pb-4">
+              <Slider
+                value={[currentTime]}
+                min={0}
+                max={duration || 100}
+                step={0.1}
+                onValueChange={handleSliderChange}
+                className="w-full bg-slate-800"
+              />
+            </div>
+            
+            {/* Control Buttons */}
+            <div className="flex items-center px-4 pb-4 gap-4">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={togglePlayback}
+                disabled={currentLine === linesRef.current.length || !!audioError}
+                className="rounded-full border-slate-700 bg-slate-800 hover:bg-slate-700"
+              >
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={resetCurrentLine}
+                className="gap-2 border-slate-700 bg-transparent hover:bg-slate-800 text-slate-300"
+                size="sm"
+              >
+                <MinusCircle className="h-4 w-4" />
+                сбросить строку
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={resetSync}
+                className="gap-2 border-slate-700 bg-transparent hover:bg-slate-800 text-slate-300"
+                size="sm"
+              >
+                <RefreshCcw className="h-4 w-4" />
+                сбросить все
+              </Button>
+              
+              <div className="ml-auto flex items-center gap-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={toggleMute}
+                  className="text-slate-300 hover:bg-slate-800"
+                >
+                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </Button>
+                
+                <Slider
+                  value={[volume]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={handleVolumeChange}
+                  className="w-24 bg-slate-800"
+                />
+                
+                <div className="flex items-center gap-2 text-slate-300">
+                  <span className="text-sm">автопрокрутка</span>
+                  <Switch 
+                    checked={autoScroll}
+                    onCheckedChange={setAutoScroll}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          
           {/* Audio Element */}
           <audio 
             ref={audioRef} 
@@ -269,125 +369,51 @@ ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`
 
           {/* Error Alert */}
           {audioError && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-4 mx-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>ошибка воспроизведения</AlertTitle>
               <AlertDescription>{audioError}</AlertDescription>
             </Alert>
           )}
 
-          {/* Time Slider */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-            
-            <div className="relative">
-              <Slider
-                value={[currentTime]}
-                min={0}
-                max={duration || 100}
-                step={0.1}
-                onValueChange={handleSliderChange}
-                className="w-full"
-              />
-            </div>
-
-            {/* Controls Row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={togglePlayback}
-                  disabled={currentLine === linesRef.current.length || !!audioError}
-                >
-                  {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={resetCurrentLine}
-                  className="gap-2"
-                >
-                  <MinusCircle className="h-4 w-4" />
-                  сбросить строку
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={resetSync}
-                  className="gap-2"
-                >
-                  <RefreshCcw className="h-4 w-4" />
-                  сбросить все
-                </Button>
-              </div>
-              
-              {/* Volume Controls */}
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={toggleMute}
-                >
-                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                </Button>
-                <Slider
-                  value={[volume]}
-                  min={0}
-                  max={100}
-                  step={1}
-                  onValueChange={handleVolumeChange}
-                  className="w-24"
-                />
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">автопрокрутка</span>
-                  <Switch 
-                    checked={autoScroll}
-                    onCheckedChange={setAutoScroll}
-                  />
-                </div>
-              </div>
-            </div>
+          {/* Track Info */}
+          <div className="px-4 py-4 text-lg font-medium text-white">
+            {syncData.artist} - {syncData.title}
           </div>
 
-          {/* Track info and Lyrics */}
-          <div className="space-y-4">
-            <div className="text-lg font-medium">
-              {syncData.artist} - {syncData.title}
-            </div>
-
-            <div className="space-y-0.5 max-h-80 overflow-y-auto p-2 border rounded-md">
+          {/* Lyrics Section */}
+          <ScrollArea className="h-[300px] px-4">
+            <div className="space-y-0.5">
               {linesRef.current.map((line, index) => (
                 <div 
                   key={index}
                   ref={index === currentLine ? currentLineRef : undefined}
                   className={`p-2 rounded transition-colors ${
                     index === currentLine 
-                      ? "bg-primary text-primary-foreground" 
+                      ? "bg-blue-600 text-white" 
                       : index < currentLine 
-                        ? "text-muted-foreground"
-                        : ""
+                        ? "text-slate-400"
+                        : "text-white"
                   }`}
                 >
                   {syncedLines[index] ? `[${formatTime(syncedLines[index].time)}] ` : ''}{line}
                 </div>
               ))}
             </div>
-          </div>
+          </ScrollArea>
 
           {/* Export Buttons */}
           {currentLine === linesRef.current.length && (
-            <div className="flex gap-4">
+            <div className="flex gap-4 p-4">
               <Button 
-                className="flex-1"
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
                 onClick={generateTTML}
               >
                 <Download className="h-4 w-4 mr-2" />
                 скачать TTML
               </Button>
               <Button 
-                className="flex-1"
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
                 onClick={generateLRC}
               >
                 <Download className="h-4 w-4 mr-2" />
