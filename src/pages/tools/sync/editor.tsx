@@ -43,7 +43,7 @@ export default function LyricsSyncEditor() {
   useEffect(() => {
     const storedData = sessionStorage.getItem('lyricsSyncData');
     if (!storedData) {
-      navigate('/tools/lyrics-sync');
+      navigate('/tools/sync');
       return;
     }
 
@@ -220,10 +220,7 @@ export default function LyricsSyncEditor() {
   const generateLRC = () => {
     if (!syncData) return;
     
-    const lrc = `[ar:${syncData.artist}]
-[ti:${syncData.title}]
-[length:${formatTime(duration)}]
-[re:Lovable Lyrics Editor]
+    const lrc = `
 
 ${syncedLines.map(line => `[${formatTime(line.time)}]${line.text}`).join('\n')}`;
 

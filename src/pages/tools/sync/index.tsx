@@ -70,7 +70,7 @@ export default function LyricsSyncPage() {
       lyrics: formData.lyrics
     }));
 
-    navigate('/tools/lyrics-sync/editor');
+    navigate('/tools/sync/editor');
   };
 
   return (
@@ -82,13 +82,13 @@ export default function LyricsSyncPage() {
             синхронизация текста трека
           </CardTitle>
           <CardDescription>
-            загрузите аудио файл и введите информацию о треке для синхронизации текста
+            загрузите вавку мп3 или что-то и введите информацию о треке для синхронизации текста
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label>аудио файл</Label>
+              <Label>аудиофайл</Label>
               <div className="flex items-center gap-4">
                 <Button 
                   type="button" 

@@ -9,7 +9,7 @@ export default function ToolsPage() {
       <h1 className="text-2xl font-bold mb-6">инструменты</h1>
       
       <div className="grid gap-6">
-        <Link to="/tools/lyrics-sync">
+        <Link to="/tools/sync">
           <Card className="transition-all duration-200 hover:shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

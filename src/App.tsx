@@ -22,8 +22,8 @@ import DashboardPage from "@/pages/DashboardPage";
 
 // Lazy-loaded components
 const ToolsPage = ReactLazy(() => import('@/pages/tools'));
-const LyricsSyncPage = ReactLazy(() => import('@/pages/tools/lyrics-sync'));
-const LyricsSyncEditor = ReactLazy(() => import('@/pages/tools/lyrics-sync/editor'));
+const LyricsSyncPage = ReactLazy(() => import('@/pages/tools/sync'));
+const LyricsSyncEditor = ReactLazy(() => import('@/pages/tools/sync/editor'));
 
 const queryClient = new QueryClient();
 
@@ -116,7 +116,7 @@ const App = () => (
                 />
                 
                 <Route 
-                  path="/tools/lyrics-sync" 
+                  path="/tools/sync" 
                   element={
                     <ProtectedRoute>
                       <Suspense fallback={<div>загрузка...</div>}>
@@ -127,7 +127,7 @@ const App = () => (
                 />
                 
                 <Route 
-                  path="/tools/lyrics-sync/editor" 
+                  path="/tools/sync/editor" 
                   element={
                     <ProtectedRoute>
                       <Suspense fallback={<div>загрузка...</div>}>
