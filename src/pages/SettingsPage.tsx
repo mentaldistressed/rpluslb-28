@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, ChangelogEntry } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw, Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -28,13 +29,6 @@ interface MaintenanceSettings {
 interface SystemVersion {
   version: string;
   lastUpdate: string;
-}
-
-interface ChangelogEntry {
-  id: string;
-  version: string;
-  description: string;
-  created_at: string;
 }
 
 export default function SettingsPage() {
@@ -82,7 +76,7 @@ export default function SettingsPage() {
             setTextColor(parsedSettings.textColor);
             setIsEnabled(parsedSettings.enabled !== false);
           } catch (e) {
-            setNewsContent(bannerData.value);
+            setNewsContent(bannerData.value || "");
           }
         }
         
@@ -110,20 +104,27 @@ export default function SettingsPage() {
         if (!settingsError && settings) {
           settings.forEach(setting => {
             if (setting.key === 'system_version') {
-              setSystemVersion(setting.value);
+              setSystemVersion(setting.value || "");
             } else if (setting.key === 'last_update') {
-              setLastUpdate(setting.value);
+              setLastUpdate(setting.value || "");
             }
           });
         }
         
-        const { data: changelog, error: changelogError } = await supabase
-          .from('changelog_entries')
-          .select('*')
-          .order('version', { ascending: false });
-          
-        if (!changelogError && changelog) {
-          setChangelogEntries(changelog);
+        // Attempt to fetch changelog entries if the table exists
+        try {
+          const { data: changelog, error: changelogError } = await supabase
+            .from('changelog_entries')
+            .select('*')
+            .order('version', { ascending: false });
+            
+          if (changelogError) {
+            console.error("Error fetching changelog:", changelogError);
+          } else if (changelog) {
+            setChangelogEntries(changelog as ChangelogEntry[]);
+          }
+        } catch (error) {
+          console.error("Error fetching changelog:", error);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -264,24 +265,38 @@ export default function SettingsPage() {
     setIsChangelogSaving(true);
     
     try {
-      const { error } = await supabase
-        .from('changelog_entries')
-        .insert([
-          {
-            version: changelogVersion,
-            description: changelogDescription
-          }
-        ]);
-        
-      if (error) throw error;
+      // Using a raw POST request instead of the Supabase client
+      // to handle the case where the table might not exist yet
+      const response = await fetch(`${supabase.supabaseUrl}/rest/v1/changelog_entries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabase.supabaseKey,
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          version: changelogVersion,
+          description: changelogDescription
+        })
+      });
       
-      const { data: changelog } = await supabase
-        .from('changelog_entries')
-        .select('*')
-        .order('version', { ascending: false });
-        
-      if (changelog) {
-        setChangelogEntries(changelog);
+      if (!response.ok) {
+        throw new Error(`Error adding changelog entry: ${response.status}`);
+      }
+      
+      // Refresh changelog entries
+      try {
+        const { data: changelog } = await supabase
+          .from('changelog_entries')
+          .select('*')
+          .order('version', { ascending: false });
+          
+        if (changelog) {
+          setChangelogEntries(changelog as ChangelogEntry[]);
+        }
+      } catch (error) {
+        console.error("Error refreshing changelog:", error);
       }
       
       setChangelogVersion("");
@@ -562,22 +577,26 @@ export default function SettingsPage() {
               
               <div className="mt-6 space-y-4">
                 <h4 className="text-sm font-medium">существующие записи</h4>
-                {changelogEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="border rounded-lg p-4 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h5 className="font-medium">Версия {entry.version}</h5>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(entry.created_at).toLocaleDateString()}
-                      </span>
+                {changelogEntries.length > 0 ? (
+                  changelogEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="border rounded-lg p-4 space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h5 className="font-medium">Версия {entry.version}</h5>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(entry.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {entry.description}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {entry.description}
-                    </p>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm">Пока нет записей в журнале изменений.</p>
+                )}
               </div>
             </CardContent>
           </Card>

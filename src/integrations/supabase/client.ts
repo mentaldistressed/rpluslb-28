@@ -11,6 +11,15 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+// Manually add type definitions for tables not yet in the Database type
+export interface ChangelogEntry {
+  id: string;
+  version: string;
+  description: string;
+  created_at: string;
+  updated_at?: string;
+}
+
 // SQL for creating notifications table:
 /* 
 CREATE TABLE IF NOT EXISTS notifications (

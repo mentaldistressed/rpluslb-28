@@ -13,14 +13,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface ChangelogEntry {
-  id: string;
-  version: string;
-  description: string;
-  created_at: string;
-}
+import { supabase, ChangelogEntry } from "@/integrations/supabase/client";
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -36,6 +29,7 @@ export default function Sidebar() {
   
   useEffect(() => {
     const fetchSystemInfo = async () => {
+      // Fetch system settings
       const { data: settings } = await supabase
         .from('system_settings')
         .select('*');
@@ -43,26 +37,33 @@ export default function Sidebar() {
       if (settings) {
         settings.forEach(setting => {
           if (setting.key === 'system_version') {
-            setSystemVersion(setting.value);
+            setSystemVersion(setting.value ?? '');
           } else if (setting.key === 'last_update') {
-            setLastUpdate(setting.value);
+            setLastUpdate(setting.value ?? '');
           }
         });
       }
       
-      const { data: changelog } = await supabase
-        .from('changelog_entries')
-        .select('*')
-        .order('version', { ascending: false });
-        
-      if (changelog) {
-        setChangelogEntries(changelog);
+      // Try to fetch changelog entries if the table exists
+      try {
+        const { data, error } = await supabase
+          .from('changelog_entries')
+          .select('*')
+          .order('version', { ascending: false });
+          
+        if (error) {
+          console.error("Error fetching changelog:", error);
+        } else if (data) {
+          setChangelogEntries(data as ChangelogEntry[]);
+        }
+      } catch (error) {
+        console.error("Error fetching changelog:", error);
       }
     };
     
     fetchSystemInfo();
     
-    // Subscribe to changes
+    // Subscribe to changes in system settings
     const systemSettingsSubscription = supabase
       .channel('system_settings_changes')
       .on('postgres_changes', {
@@ -73,21 +74,29 @@ export default function Sidebar() {
         fetchSystemInfo();
       })
       .subscribe();
-      
-    const changelogSubscription = supabase
-      .channel('changelog_changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'changelog_entries'
-      }, () => {
-        fetchSystemInfo();
-      })
-      .subscribe();
+    
+    // Try to subscribe to changelog entries if the table exists
+    let changelogSubscription;
+    try {
+      changelogSubscription = supabase
+        .channel('changelog_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'changelog_entries'
+        }, () => {
+          fetchSystemInfo();
+        })
+        .subscribe();
+    } catch (error) {
+      console.error("Error subscribing to changelog:", error);
+    }
       
     return () => {
       systemSettingsSubscription.unsubscribe();
-      changelogSubscription.unsubscribe();
+      if (changelogSubscription) {
+        changelogSubscription.unsubscribe();
+      }
     };
   }, []);
   
@@ -202,10 +211,10 @@ export default function Sidebar() {
           className="w-full text-left px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
         >
           <FileText className="h-4 w-4" />
-          <span>v{systemVersion}</span>
+          <span>v{systemVersion || "1.0.0"}</span>
         </button>
         <p className="text-xs text-muted-foreground px-3">
-          последнее обновление: {new Date(lastUpdate).toLocaleString()}
+          последнее обновление: {lastUpdate ? new Date(lastUpdate).toLocaleString() : "N/A"}
         </p>
       </div>
       
@@ -216,19 +225,23 @@ export default function Sidebar() {
           </SheetHeader>
           <ScrollArea className="h-[calc(100vh-100px)] mt-4">
             <div className="space-y-6 pr-6">
-              {changelogEntries.map((entry) => (
-                <div key={entry.id} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">v{entry.version}</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(entry.created_at).toLocaleDateString()}
-                    </span>
+              {changelogEntries.length > 0 ? (
+                changelogEntries.map((entry) => (
+                  <div key={entry.id} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">v{entry.version}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(entry.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap">
+                      {entry.description}
+                    </p>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">
-                    {entry.description}
-                  </p>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">История изменений пока пуста.</p>
+              )}
             </div>
           </ScrollArea>
         </SheetContent>
