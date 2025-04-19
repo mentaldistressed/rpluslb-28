@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { supabase, ChangelogEntry } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 
 export default function Sidebar() {
@@ -25,8 +25,8 @@ export default function Sidebar() {
   const [showChangelog, setShowChangelog] = useState(false);
   const [systemVersion, setSystemVersion] = useState("");
   const [lastUpdate, setLastUpdate] = useState("");
-  const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
-  
+  const [changelogEntries, setChangelogEntries] = useState([]);
+
   useEffect(() => {
     const fetchSystemInfo = async () => {
       const { data: settings } = await supabase
@@ -52,7 +52,7 @@ export default function Sidebar() {
         if (error) {
           console.error("Error fetching changelog:", error);
         } else if (data) {
-          setChangelogEntries(data as ChangelogEntry[]);
+          setChangelogEntries(data);
         }
       } catch (error) {
         console.error("Error fetching changelog:", error);
@@ -231,13 +231,15 @@ export default function Sidebar() {
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">v{entry.version}</Badge>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(entry.created_at).toLocaleDateString()}
+                        {format(parseISO(entry.created_at), "dd.MM.yyyy, HH:mm")}
                       </span>
                     </div>
                     {Array.isArray(entry.description) ? (
                       <ul className="text-sm list-disc list-inside space-y-1">
                         {entry.description.map((change, index) => (
-                          <li key={index}>{change}</li>
+                          <li key={index} className="text-foreground before:text-muted-foreground before:mr-2 before:content-['·']">
+                            {change}
+                          </li>
                         ))}
                       </ul>
                     ) : (
