@@ -1,120 +1,200 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
+import { Bell, BadgeDollarSign, Ban, Crown, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Clock, PackageX, Bell, FileText, Lock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
-interface BannerSettings {
-  title: string;
-  content: string;
-  backgroundColor: string;
-  textColor: string;
-  enabled: boolean;
+interface Outcome {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType;
+  possible: boolean;
 }
 
-export default function SettingsPage() {
+const outcomes: Outcome[] = [
+  {
+    id: 'royalty',
+    name: 'роялти 100%',
+    description: 'получить 100% роялти',
+    icon: Crown,
+    possible: false
+  },
+  {
+    id: 'fine',
+    name: 'штраф 5000₽',
+    description: 'штраф 5000 рублей',
+    icon: BadgeDollarSign,
+    possible: true
+  },
+  {
+    id: 'bonus',
+    name: '1000₽',
+    description: 'бонус 1000 рублей',
+    icon: Bell,
+    possible: false
+  },
+  {
+    id: 'deactivation',
+    name: 'отключение',
+    description: 'отключение саб-кабинета',
+    icon: Ban,
+    possible: true
+  }
+];
+
+export default function CasinoPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [bannerTitle, setBannerTitle] = useState("Объявление");
-  const [newsContent, setNewsContent] = useState("");
-  const [backgroundColor, setBackgroundColor] = useState("#F2FCE2");
-  const [textColor, setTextColor] = useState("#1A1F2C");
-  const [isEnabled, setIsEnabled] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Fetch current news banner content
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [cooldownEnds, setCooldownEnds] = useState<Date | null>(null);
+  const [timeLeft, setTimeLeft] = useState<string>("");
+  const isAdmin = user?.role === 'admin';
+
   useEffect(() => {
-    const fetchNewsContent = async () => {
-      setIsLoading(true);
-      // Use a more generic approach to query the table without relying on type checking
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('*')
-        .eq('key', 'news_banner')
-        .single();
+    const getLastSpin = async () => {
+      if (!user || isAdmin) return;
+      
+      try {
+        const { data } = await supabase
+          .from('casino_spins')
+          .select('created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
         
-      if (!error && data) {
-        try {
-          // Parse the JSON value
-          const parsedSettings = JSON.parse(data.value) as BannerSettings;
-          setBannerTitle(parsedSettings.title);
-          setNewsContent(parsedSettings.content);
-          setBackgroundColor(parsedSettings.backgroundColor);
-          setTextColor(parsedSettings.textColor);
-          setIsEnabled(parsedSettings.enabled !== false); // Default to true if not specified
-        } catch (e) {
-          // If parsing fails, use the string value as content with default settings
-          setNewsContent(data.value);
+        if (data) {
+          const lastSpinDate = new Date(data.created_at);
+          const cooldownEndDate = new Date(lastSpinDate.getTime() + 24 * 60 * 60 * 1000);
+          if (cooldownEndDate > new Date()) {
+            setCooldownEnds(cooldownEndDate);
+          }
         }
+      } catch (error) {
+        console.error("Error fetching last spin:", error);
       }
-      setIsLoading(false);
     };
     
-    fetchNewsContent();
-  }, []);
-  
+    getLastSpin();
+  }, [user, isAdmin]);
+
+  useEffect(() => {
+    if (!cooldownEnds) return;
+    
+    const timer = setInterval(() => {
+      const now = new Date();
+      const diff = cooldownEnds.getTime() - now.getTime();
+      
+      if (diff <= 0) {
+        setCooldownEnds(null);
+        setTimeLeft("");
+        clearInterval(timer);
+        return;
+      }
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeLeft(`${hours}ч ${minutes}м ${seconds}с`);
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [cooldownEnds]);
+
   if (!user) return null;
-  
-  const isAdmin = user.role === 'admin';
-  
+
+  const spin = async () => {
+    if (cooldownEnds && !isAdmin) return;
+    setIsSpinning(true);
+    
+    // Only allow fine and deactivation outcomes
+    const possibleOutcomes = outcomes.filter(o => o.possible);
+    const result = possibleOutcomes[Math.floor(Math.random() * possibleOutcomes.length)];
+    
+    // Record the spin
+    if (!isAdmin) {
+      try {
+        await supabase
+          .from('casino_spins')
+          .insert([{
+            user_id: user.id,
+            outcome_id: result.id
+          }]);
+        
+        // Set cooldown for non-admins
+        const now = new Date();
+        setCooldownEnds(new Date(now.getTime() + 24 * 60 * 60 * 1000));
+      } catch (error) {
+        console.error("Error recording spin:", error);
+      }
+    }
+    
+    setTimeout(() => {
+      setIsSpinning(false);
+      toast({
+        title: result.name,
+        description: result.description,
+        variant: "destructive"
+      });
+    }, 3000);
+  };
+
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="animate-fade-in space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{isAdmin ? 'казино' : 'казино'}</h1>
+        <h1 className="text-2xl font-bold">казино</h1>
       </div>
 
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <Bell className="h-5 w-5 text-blue-500" />
-            </div>
-            <div>
-                <h3 className="font-medium text-blue-800">скоро тут будет ебучая летучая гремучая имба</h3>
-                <p className="text-sm text-blue-600">в следующих обновах запилю тут крутое казино на деньги (ВЗлом СЬебербанк andoreed.ru Ipa Apk)</p>
-            </div>
-            </div>
-        </div>
+      <div className="relative max-w-3xl mx-auto">
+        <Carousel
+          opts={{
+            align: "center",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="py-4">
+            {outcomes.map((outcome) => (
+              <CarouselItem key={outcome.id} className="basis-1/3 md:basis-1/4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <outcome.icon className="h-5 w-5" />
+                      {outcome.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">{outcome.description}</p>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </div>
 
-      {/* <Card className="border-border/40 overflow-hidden">
-        <CardHeader className="bg-secondary/30">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-secondary/50 rounded-full flex items-center justify-center">
-                <PackageX className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <CardTitle>казино в разработке</CardTitle>
-            </div>
-            <Badge variant="outline" className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">
-              скоро
-            </Badge>
+      <div className="flex flex-col items-center gap-4 mt-8">
+        {!isAdmin && timeLeft && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>следующий спин доступен через: {timeLeft}</span>
           </div>
-          <CardDescription>
-            казино
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
-            <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
-            <div className="h-12 bg-secondary/20 rounded-lg animate-pulse"></div>
-            <div className="flex justify-center mt-6">
-              <p className="text-sm text-muted-foreground px-4 py-2 bg-muted/30 rounded-full">
-                каталог релизов будет доступен в ближайшем обновлении системы
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
+        )}
+        
+        <Button 
+          size="lg"
+          onClick={spin}
+          disabled={isSpinning || (!isAdmin && !!cooldownEnds)}
+          className="font-semibold min-w-[200px]"
+        >
+          {isSpinning ? "крутим..." : "испытать удачу"}
+        </Button>
+      </div>
     </div>
   );
-};
+}
