@@ -18,7 +18,6 @@ import NotFoundPage from "@/pages/NotFoundPage";
 import FinancesPage from "@/pages/FinancesPage";
 import MaintenancePage from "@/pages/MaintenancePage";
 import DashboardPage from "@/pages/DashboardPage";
-import Casino from "@/pages/Casino";
 
 // Lazy-loaded components
 const ToolsPage = ReactLazy(() => import('@/pages/tools/'));
@@ -98,15 +97,6 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <TicketsPage />
-                    </ProtectedRoute>
-                  } 
-                />
-
-                <Route 
-                  path="/casino" 
-                  element={
-                    <ProtectedRoute>
-                      <Casino />
                     </ProtectedRoute>
                   } 
                 />

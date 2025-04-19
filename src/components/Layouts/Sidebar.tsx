@@ -47,13 +47,7 @@ export default function Sidebar() {
         href: "/tools",
         icon: Hammer,
         active: location.pathname.startsWith('/tools')
-      },
-      {
-        name: "казино",
-        href: "/casino",
-        icon: Coins,
-        active: location.pathname.startsWith('/casino')
-      },
+      }
     ] : []),
     ...(isAdmin ? [
       {
@@ -91,12 +85,6 @@ export default function Sidebar() {
         href: "/settings",
         icon: Settings,
         active: location.pathname.startsWith('/settings')
-      },
-      {
-        name: "казино",
-        href: "/casino",
-        icon: Coins,
-        active: location.pathname.startsWith('/casino')
       }
     ] : []),
   ];
