@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,13 @@ interface Outcome {
   description: string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
   possible: boolean;
+}
+
+type CasinoSpin = {
+  id: string;
+  user_id: string;
+  outcome_id: string;
+  created_at: string;
 }
 
 const outcomes: Outcome[] = [
@@ -59,7 +67,8 @@ export default function CasinoPage() {
       if (!user || isAdmin) return;
       
       try {
-        const { data } = await supabase
+        // Using the raw SQL query approach to work with tables not in TypeScript types yet
+        const { data, error } = await supabase
           .from('casino_spins')
           .select('created_at')
           .eq('user_id', user.id)
@@ -119,6 +128,7 @@ export default function CasinoPage() {
     // Record the spin
     if (!isAdmin) {
       try {
+        // Using the raw SQL query approach to work with tables not in TypeScript types yet
         await supabase
           .from('casino_spins')
           .insert([{
