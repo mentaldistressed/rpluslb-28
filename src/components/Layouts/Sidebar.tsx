@@ -14,19 +14,13 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
+import { ChangelogEntry } from "@/types";
 
 interface SystemSetting {
   key: string;
   value: string | null;
   created_at: string;
   updated_at: string;
-}
-
-interface ChangelogEntry {
-  id: string;
-  version: string;
-  description: string | string[];
-  created_at: string;
 }
 
 export default function Sidebar() {
@@ -63,24 +57,18 @@ export default function Sidebar() {
           });
         }
         
-        const { data, error } = await supabase
-          .from('system_settings')
+        const { data: changelogData, error: changelogError } = await supabase
+          .from('changelog_entries')
           .select('*')
-          .eq('key', 'changelog_entries')
-          .single() as { data: SystemSetting | null; error: any };
+          .order('created_at', { ascending: false });
           
-        if (error) {
-          console.error("Error fetching changelog:", error);
+        if (changelogError) {
+          console.error("Error fetching changelog entries:", changelogError);
           return;
         }
 
-        if (data && typeof data.value === 'string') {
-          try {
-            const parsedEntries = JSON.parse(data.value) as ChangelogEntry[];
-            setChangelogEntries(parsedEntries);
-          } catch (parseError) {
-            console.error("Error parsing changelog entries:", parseError);
-          }
+        if (changelogData) {
+          setChangelogEntries(changelogData as ChangelogEntry[]);
         }
       } catch (error) {
         console.error("Error fetching system info:", error);
@@ -100,8 +88,20 @@ export default function Sidebar() {
       })
       .subscribe();
       
+    const changelogSubscription = supabase
+      .channel('changelog_entries_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'changelog_entries'
+      }, () => {
+        fetchSystemInfo();
+      })
+      .subscribe();
+      
     return () => {
       systemSettingsSubscription.unsubscribe();
+      changelogSubscription.unsubscribe();
     };
   }, []);
   
@@ -254,12 +254,10 @@ export default function Sidebar() {
                       </div>
                     ) : (
                       <div className="text-sm space-y-1">
-                        {(entry.description || '').split('\n').map((line, index) => (
-                          <div key={index} className="flex items-start">
-                            <span className="mr-2 text-muted-foreground">•</span>
-                            <span className="text-foreground">{line.trim()}</span>
-                          </div>
-                        ))}
+                        <div className="flex items-start">
+                          <span className="mr-2 text-muted-foreground">•</span>
+                          <span className="text-foreground">{entry.description}</span>
+                        </div>
                       </div>
                     )}
                   </div>
