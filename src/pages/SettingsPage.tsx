@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,10 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw, Plus, Trash2 } from "lucide-react";
+import { RefreshCw, Plus, Trash2, Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { ChangelogEntry } from "@/types";
+import { ChangelogEntryForm } from "@/components/changelog/ChangelogEntryForm";
 
 interface BannerSettings {
   title: string;
@@ -29,13 +31,6 @@ interface MaintenanceSettings {
 interface SystemVersion {
   version: string;
   lastUpdate: string;
-}
-
-interface ChangelogEntry {
-  id: string;
-  version: string;
-  description: string;
-  created_at: string;
 }
 
 export default function SettingsPage() {
@@ -118,7 +113,7 @@ export default function SettingsPage() {
           });
         }
         
-        // Attempt to fetch changelog entries if the table exists
+        // Fetch changelog entries
         try {
           const { data: changelog, error: changelogError } = await supabase
             .from('changelog_entries')
@@ -266,21 +261,6 @@ export default function SettingsPage() {
     }
   };
   
-  const handleAddChangelogDescriptionField = () => {
-    setChangelogDescriptions([...changelogDescriptions, ""]);
-  };
-
-  const handleChangeChangelogDescription = (index: number, value: string) => {
-    const newDescriptions = [...changelogDescriptions];
-    newDescriptions[index] = value;
-    setChangelogDescriptions(newDescriptions);
-  };
-
-  const handleRemoveChangelogDescription = (index: number) => {
-    const newDescriptions = changelogDescriptions.filter((_, i) => i !== index);
-    setChangelogDescriptions(newDescriptions);
-  };
-
   const handleAddChangelogEntry = async () => {
     if (!user || user.role !== 'admin') return;
     
@@ -606,38 +586,10 @@ export default function SettingsPage() {
               
               <div className="space-y-2">
                 <Label>описание изменений</Label>
-                {changelogDescriptions.map((description, index) => (
-                  <div key={index} className="flex items-center space-x-2 mb-2">
-                    <Textarea
-                      value={description}
-                      onChange={(e) => handleChangeChangelogDescription(index, e.target.value)}
-                      placeholder={`изменение ${index + 1}`}
-                      className="flex-1"
-                    />
-                    {changelogDescriptions.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 shrink-0 text-destructive"
-                        onClick={() => handleRemoveChangelogDescription(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={handleAddChangelogDescriptionField}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  добавить изменение
-                </Button>
+                <ChangelogEntryForm 
+                  entries={changelogDescriptions}
+                  onChange={setChangelogDescriptions}
+                />
               </div>
               
               <Button 

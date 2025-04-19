@@ -45,6 +45,6 @@ export interface ActivityItem {
 export interface ChangelogEntry {
   id: string;
   version: string;
-  description: string | string[];
+  description: string[] | string;
   created_at: string;
 }
