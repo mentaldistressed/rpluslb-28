@@ -13,6 +13,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { supabase, ChangelogEntry } from "@/integrations/supabase/client";
+import { format, parseISO } from "date-fns";
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -28,7 +29,6 @@ export default function Sidebar() {
   
   useEffect(() => {
     const fetchSystemInfo = async () => {
-      // Fetch system settings
       const { data: settings } = await supabase
         .from('system_settings')
         .select('*');
@@ -43,7 +43,6 @@ export default function Sidebar() {
         });
       }
       
-      // Try to fetch changelog entries if the table exists
       try {
         const { data, error } = await supabase
           .from('changelog_entries')
@@ -62,7 +61,6 @@ export default function Sidebar() {
     
     fetchSystemInfo();
     
-    // Subscribe to changes in system settings
     const systemSettingsSubscription = supabase
       .channel('system_settings_changes')
       .on('postgres_changes', {
@@ -74,7 +72,6 @@ export default function Sidebar() {
       })
       .subscribe();
     
-    // Try to subscribe to changelog entries if the table exists
     let changelogSubscription;
     try {
       changelogSubscription = supabase
@@ -173,6 +170,10 @@ export default function Sidebar() {
     ] : []),
   ];
 
+  const formattedLastUpdate = lastUpdate ? 
+    format(parseISO(lastUpdate), "dd.MM.yyyy, HH:mm") : 
+    "N/A";
+
   return (
     <div className="w-64 bg-card border-r border-border/40 shadow-sm min-h-[calc(100vh-4rem)] flex flex-col p-4 transition-colors duration-200">
       <div className="flex-1 space-y-6">
@@ -213,7 +214,7 @@ export default function Sidebar() {
           <span>v{systemVersion || "1.0.0"}</span>
         </button>
         <p className="text-xs text-muted-foreground px-3">
-          последнее обновление: {lastUpdate ? new Date(lastUpdate).toLocaleString() : "N/A"}
+          последнее обновление: {formattedLastUpdate}
         </p>
       </div>
       

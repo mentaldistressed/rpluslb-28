@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChangelogEntryForm } from "@/components/changelog/ChangelogEntryForm";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 interface SystemSettings {
   key: string;
@@ -77,7 +78,11 @@ const SettingsPage = () => {
   const [isAddingChangelog, setIsAddingChangelog] = useState(false);
   const [isChangelogDialogOpen, setIsChangelogDialogOpen] = useState(false);
   const [rlsError, setRlsError] = useState(false);
-  
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
+  const [selectedHours, setSelectedHours] = useState("00");
+  const [selectedMinutes, setSelectedMinutes] = useState("00");
+
   useEffect(() => {
     if (user && user.role === 'admin') {
       setIsAdmin(true);
@@ -414,15 +419,67 @@ const SettingsPage = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {format(lastUpdate, "PPP")}
+                        {format(lastUpdate, "PPP HH:mm")}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={lastUpdate}
-                        onSelect={(date) => date && setLastUpdate(date)}
-                      />
+                      <div className="p-3">
+                        <Calendar
+                          mode="single"
+                          selected={lastUpdate}
+                          onSelect={(date) => {
+                            if (date) {
+                              const newDate = new Date(date);
+                              newDate.setHours(parseInt(selectedHours));
+                              newDate.setMinutes(parseInt(selectedMinutes));
+                              setLastUpdate(newDate);
+                            }
+                          }}
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                        <div className="border-t border-border/40 p-3 space-y-2">
+                          <Label>время</Label>
+                          <div className="flex gap-2">
+                            <Select 
+                              value={selectedHours}
+                              onValueChange={setSelectedHours}
+                            >
+                              <SelectTrigger className="w-[100px]">
+                                <SelectValue>{selectedHours}</SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }).map((_, i) => (
+                                  <SelectItem 
+                                    key={i} 
+                                    value={i.toString().padStart(2, '0')}
+                                  >
+                                    {i.toString().padStart(2, '0')}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <span className="flex items-center">:</span>
+                            <Select
+                              value={selectedMinutes}
+                              onValueChange={setSelectedMinutes}
+                            >
+                              <SelectTrigger className="w-[100px]">
+                                <SelectValue>{selectedMinutes}</SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 60 }).map((_, i) => (
+                                  <SelectItem 
+                                    key={i} 
+                                    value={i.toString().padStart(2, '0')}
+                                  >
+                                    {i.toString().padStart(2, '0')}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <Button 
