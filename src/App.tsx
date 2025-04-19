@@ -81,11 +81,9 @@ const App = () => (
           <TicketsProvider>
             <MainLayout>
               <Routes>
-                {/* Redirect root to login or dashboard */}
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<LoginPage />} />
                 
-                {/* Protected routes */}
                 <Route 
                   path="/dashboard" 
                   element={
@@ -117,7 +115,9 @@ const App = () => (
                   path="/tools" 
                   element={
                     <ProtectedRoute>
+                      <Suspense fallback={<div>загрузка...</div>}>
                         <ToolsPage />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
