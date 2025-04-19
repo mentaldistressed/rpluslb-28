@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,20 +58,24 @@ export default function CasinoPage() {
     const getLastSpin = async () => {
       if (!user || isAdmin) return;
       
-      const { data } = await supabase
-        .from('casino_spins')
-        .select('created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      
-      if (data) {
-        const lastSpinDate = new Date(data.created_at);
-        const cooldownEndDate = new Date(lastSpinDate.getTime() + 24 * 60 * 60 * 1000);
-        if (cooldownEndDate > new Date()) {
-          setCooldownEnds(cooldownEndDate);
+      try {
+        const { data } = await supabase
+          .from('casino_spins')
+          .select('created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (data) {
+          const lastSpinDate = new Date(data.created_at);
+          const cooldownEndDate = new Date(lastSpinDate.getTime() + 24 * 60 * 60 * 1000);
+          if (cooldownEndDate > new Date()) {
+            setCooldownEnds(cooldownEndDate);
+          }
         }
+      } catch (error) {
+        console.error("Error fetching last spin:", error);
       }
     };
     
@@ -115,16 +118,20 @@ export default function CasinoPage() {
     
     // Record the spin
     if (!isAdmin) {
-      await supabase
-        .from('casino_spins')
-        .insert({
-          user_id: user.id,
-          outcome_id: result.id
-        });
-      
-      // Set cooldown for non-admins
-      const now = new Date();
-      setCooldownEnds(new Date(now.getTime() + 24 * 60 * 60 * 1000));
+      try {
+        await supabase
+          .from('casino_spins')
+          .insert([{
+            user_id: user.id,
+            outcome_id: result.id
+          }]);
+        
+        // Set cooldown for non-admins
+        const now = new Date();
+        setCooldownEnds(new Date(now.getTime() + 24 * 60 * 60 * 1000));
+      } catch (error) {
+        console.error("Error recording spin:", error);
+      }
     }
     
     setTimeout(() => {
@@ -154,7 +161,7 @@ export default function CasinoPage() {
           <CarouselContent className="py-4">
             {outcomes.map((outcome) => (
               <CarouselItem key={outcome.id} className="basis-1/3 md:basis-1/4">
-                <Card className={`border-border/40 ${!outcome.possible ? 'opacity-50' : ''} ${isSpinning ? 'animate-pulse' : ''}`}>
+                <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <outcome.icon className="h-5 w-5" />
