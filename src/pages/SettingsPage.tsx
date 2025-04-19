@@ -271,38 +271,26 @@ export default function SettingsPage() {
     setIsChangelogSaving(true);
     
     try {
-      // Using a raw POST request instead of the Supabase client
-      // to handle the case where the table might not exist yet
-      const response = await fetch(`${supabase.supabaseUrl}/rest/v1/changelog_entries`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabase.supabaseKey,
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
+      // Use the Supabase client directly instead of raw fetch
+      const { error } = await supabase
+        .from('changelog_entries')
+        .insert({
           version: changelogVersion,
           description: changelogDescription
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error adding changelog entry: ${response.status}`);
+        });
+        
+      if (error) {
+        throw error;
       }
       
       // Refresh changelog entries
-      try {
-        const { data: changelog } = await supabase
-          .from('changelog_entries')
-          .select('*')
-          .order('version', { ascending: false });
+      const { data: changelog } = await supabase
+        .from('changelog_entries')
+        .select('*')
+        .order('version', { ascending: false });
           
-        if (changelog) {
-          setChangelogEntries(changelog as ChangelogEntry[]);
-        }
-      } catch (error) {
-        console.error("Error refreshing changelog:", error);
+      if (changelog) {
+        setChangelogEntries(changelog as ChangelogEntry[]);
       }
       
       setChangelogVersion("");
