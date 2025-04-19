@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useTickets } from "@/contexts/TicketsContext";
 import { Button } from "@/components/ui/button";
@@ -234,9 +233,15 @@ export default function Sidebar() {
                         {new Date(entry.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-sm whitespace-pre-wrap">
-                      {entry.description}
-                    </p>
+                    {Array.isArray(entry.description) ? (
+                      <ul className="text-sm list-disc list-inside space-y-1">
+                        {entry.description.map((change, index) => (
+                          <li key={index}>{change}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap">{entry.description}</p>
+                    )}
                   </div>
                 ))
               ) : (

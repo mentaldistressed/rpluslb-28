@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -52,19 +51,16 @@ const SettingsPage = () => {
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   
-  // System settings
   const [systemSettings, setSystemSettings] = useState<SystemSettings[]>([]);
   const [systemVersion, setSystemVersion] = useState("");
   const [lastUpdate, setLastUpdate] = useState(new Date());
   
-  // Maintenance mode
   const [maintenanceSettings, setMaintenanceSettings] = useState<MaintenanceSettings>({
     enabled: false,
     endTime: new Date(Date.now() + 3600000).toISOString(),
     message: "система находится на техническом обслуживании. пожалуйста, попробуйте позже."
   });
   
-  // News banner
   const [newsBannerSettings, setNewsBannerSettings] = useState<NewsBannerSettings>({
     enabled: true,
     title: "Объявление",
@@ -73,16 +69,14 @@ const SettingsPage = () => {
     textColor: "#FFFFFF"
   });
   
-  // Changelog
   const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
   const [newVersion, setNewVersion] = useState("");
-  const [newDescription, setNewDescription] = useState("");
+  const [newDescription, setNewDescription] = useState<string>("");
   const [isLoadingChangelog, setIsLoadingChangelog] = useState(false);
   const [isAddingChangelog, setIsAddingChangelog] = useState(false);
   const [isChangelogDialogOpen, setIsChangelogDialogOpen] = useState(false);
   const [rlsError, setRlsError] = useState(false);
   
-  // Check if user is admin
   useEffect(() => {
     if (user && user.role === 'admin') {
       setIsAdmin(true);
@@ -92,7 +86,6 @@ const SettingsPage = () => {
   
   const fetchSettings = async () => {
     try {
-      // Fetch system settings
       const { data: settings, error } = await supabase
         .from('system_settings')
         .select('*');
@@ -104,7 +97,6 @@ const SettingsPage = () => {
       if (settings) {
         setSystemSettings(settings);
         
-        // Process system settings
         settings.forEach(setting => {
           if (setting.key === 'system_version') {
             setSystemVersion(setting.value);
@@ -126,7 +118,6 @@ const SettingsPage = () => {
         });
       }
       
-      // Fetch changelog entries
       await fetchChangelogEntries();
       
     } catch (error) {
@@ -148,7 +139,6 @@ const SettingsPage = () => {
         .order('version', { ascending: false });
       
       if (error) {
-        // If there's a table access error, set the flag but don't show an error toast
         if (error.code === '42501') {
           setRlsError(true);
           console.warn("RLS policy preventing changelog access. Admin needs to update RLS policies.");
@@ -187,7 +177,6 @@ const SettingsPage = () => {
       if (key === 'system_version') {
         setSystemVersion(value);
         
-        // Also update last_update
         const now = new Date().toISOString();
         await supabase
           .from('system_settings')
@@ -218,7 +207,7 @@ const SettingsPage = () => {
       toast({
         title: "режим обслуживания обновлен",
         description: maintenanceSettings.enabled 
-          ? "режим обслуживания включен"
+          ? "режим о��служивания включен"
           : "режим обслуживания отключен",
       });
     } catch (error) {
@@ -267,7 +256,6 @@ const SettingsPage = () => {
     setIsAddingChangelog(true);
     
     try {
-      // Check if we already know there's an RLS issue
       if (rlsError) {
         toast({
           title: "ошибка доступа",
@@ -279,17 +267,21 @@ const SettingsPage = () => {
         return;
       }
       
+      const changes = newDescription
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+      
       const { data, error } = await supabase
         .from('changelog_entries')
         .insert({
           version: newVersion,
-          description: newDescription
+          description: changes
         })
         .select()
         .single();
       
       if (error) {
-        // Check if it's an RLS error
         if (error.code === '42501') {
           setRlsError(true);
           throw new Error("Error adding changelog entry: 401");
@@ -307,7 +299,6 @@ const SettingsPage = () => {
         description: "запись журнала изменений была успешно добавлена",
       });
       
-      // Update system version
       await handleUpdateSystemSettings('system_version', newVersion);
       
     } catch (error) {
@@ -324,7 +315,6 @@ const SettingsPage = () => {
   
   const handleDeleteChangelogEntry = async (id: string) => {
     try {
-      // Check if we already know there's an RLS issue
       if (rlsError) {
         toast({
           title: "ошибка доступа",
@@ -340,7 +330,6 @@ const SettingsPage = () => {
         .eq('id', id);
         
       if (error) {
-        // Check if it's an RLS error
         if (error.code === '42501') {
           setRlsError(true);
           throw new Error("Error deleting changelog entry: 401");
@@ -364,7 +353,6 @@ const SettingsPage = () => {
     }
   };
   
-  // If user is not admin, show access denied
   if (!isAdmin) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-16rem)]">
@@ -542,7 +530,15 @@ const SettingsPage = () => {
                             {format(parseISO(entry.created_at), "dd.MM.yyyy")}
                           </TableCell>
                           <TableCell className="whitespace-pre-wrap text-sm">
-                            {entry.description}
+                            {Array.isArray(entry.description) ? (
+                              <ul className="list-disc list-inside space-y-1">
+                                {entry.description.map((change, index) => (
+                                  <li key={index}>{change}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p>{entry.description}</p>
+                            )}
                           </TableCell>
                           <TableCell>
                             <AlertDialog>

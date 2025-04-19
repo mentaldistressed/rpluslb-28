@@ -1,4 +1,3 @@
-
 -- Create system_settings table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.system_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -12,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
 CREATE TABLE IF NOT EXISTS public.changelog_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   version TEXT NOT NULL,
-  description TEXT NOT NULL,
+  description TEXT[] NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );

@@ -15,7 +15,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 export interface ChangelogEntry {
   id: string;
   version: string;
-  description: string;
+  description: string[];  // Changed from string to string[]
   created_at: string;
   updated_at?: string;
 }
