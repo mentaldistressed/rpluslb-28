@@ -19,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChangelogEntryForm } from "@/components/changelog/ChangelogEntryForm";
 
 interface SystemSettings {
   key: string;
@@ -71,7 +72,7 @@ const SettingsPage = () => {
   
   const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
   const [newVersion, setNewVersion] = useState("");
-  const [newDescription, setNewDescription] = useState<string>("");
+  const [newDescription, setNewDescription] = useState<string[]>(['']);
   const [isLoadingChangelog, setIsLoadingChangelog] = useState(false);
   const [isAddingChangelog, setIsAddingChangelog] = useState(false);
   const [isChangelogDialogOpen, setIsChangelogDialogOpen] = useState(false);
@@ -214,7 +215,7 @@ const SettingsPage = () => {
       console.error("Error updating maintenance mode:", error);
       toast({
         title: "ошибка",
-        description: "не удалось обновить режим обслуживания",
+        description: "не удалось обновить режим обс��уживания",
         variant: "destructive"
       });
     }
@@ -244,7 +245,7 @@ const SettingsPage = () => {
   };
   
   const handleAddChangelogEntry = async () => {
-    if (!newVersion.trim() || !newDescription.trim()) {
+    if (!newVersion.trim() || !newDescription.some(desc => desc.trim())) {
       toast({
         title: "ошибка",
         description: "пожалуйста, заполните все поля",
@@ -267,10 +268,7 @@ const SettingsPage = () => {
         return;
       }
       
-      const changes = newDescription
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0);
+      const changes = newDescription.filter(desc => desc.trim());
       
       const { data, error } = await supabase
         .from('changelog_entries')
@@ -291,7 +289,7 @@ const SettingsPage = () => {
       
       setChangelogEntries([data, ...changelogEntries]);
       setNewVersion("");
-      setNewDescription("");
+      setNewDescription(['']);
       setIsChangelogDialogOpen(false);
       
       toast({
@@ -473,12 +471,9 @@ const SettingsPage = () => {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="description">описание изменений</Label>
-                      <Textarea
-                        id="description"
-                        placeholder="список изменений..."
-                        value={newDescription}
-                        onChange={(e) => setNewDescription(e.target.value)}
-                        rows={5}
+                      <ChangelogEntryForm 
+                        entries={newDescription}
+                        onChange={setNewDescription}
                       />
                     </div>
                   </div>
