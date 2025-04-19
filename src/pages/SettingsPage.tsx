@@ -25,6 +25,18 @@ interface MaintenanceSettings {
   message: string;
 }
 
+interface SystemVersion {
+  version: string;
+  lastUpdate: string;
+}
+
+interface ChangelogEntry {
+  id: string;
+  version: string;
+  description: string;
+  created_at: string;
+}
+
 export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -41,6 +53,15 @@ export default function SettingsPage() {
   const [maintenanceMessage, setMaintenanceMessage] = useState("проводятся технические работы. личный кабинет временно недоступен.");
   const [maintenanceSaving, setMaintenanceSaving] = useState(false);
   
+  const [systemVersion, setSystemVersion] = useState("");
+  const [lastUpdate, setLastUpdate] = useState("");
+  const [versionSaving, setVersionSaving] = useState(false);
+  
+  const [changelogVersion, setChangelogVersion] = useState("");
+  const [changelogDescription, setChangelogDescription] = useState("");
+  const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
+  const [isChangelogSaving, setIsChangelogSaving] = useState(false);
+
   useEffect(() => {
     const fetchSettings = async () => {
       setIsLoading(true);
@@ -80,6 +101,29 @@ export default function SettingsPage() {
           } catch (e) {
             console.error("Error parsing maintenance settings:", e);
           }
+        }
+        
+        const { data: settings, error: settingsError } = await supabase
+          .from('system_settings')
+          .select('*');
+          
+        if (!settingsError && settings) {
+          settings.forEach(setting => {
+            if (setting.key === 'system_version') {
+              setSystemVersion(setting.value);
+            } else if (setting.key === 'last_update') {
+              setLastUpdate(setting.value);
+            }
+          });
+        }
+        
+        const { data: changelog, error: changelogError } = await supabase
+          .from('changelog_entries')
+          .select('*')
+          .order('version', { ascending: false });
+          
+        if (!changelogError && changelog) {
+          setChangelogEntries(changelog);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -173,6 +217,92 @@ export default function SettingsPage() {
     }
   };
   
+  const handleSaveVersion = async () => {
+    if (!user || user.role !== 'admin') return;
+    
+    setVersionSaving(true);
+    
+    try {
+      const updates = [
+        {
+          key: 'system_version',
+          value: systemVersion
+        },
+        {
+          key: 'last_update',
+          value: lastUpdate
+        }
+      ];
+      
+      const { error } = await supabase
+        .from('system_settings')
+        .upsert(updates, {
+          onConflict: 'key'
+        });
+        
+      if (error) throw error;
+      
+      toast({
+        title: "версия системы обновлена",
+        description: "Информация о версии успешно обновлена",
+      });
+    } catch (error) {
+      console.error("Error saving version:", error);
+      toast({
+        title: "ошибка",
+        description: "не удалось обновить версию",
+        variant: "destructive",
+      });
+    } finally {
+      setVersionSaving(false);
+    }
+  };
+  
+  const handleAddChangelogEntry = async () => {
+    if (!user || user.role !== 'admin') return;
+    
+    setIsChangelogSaving(true);
+    
+    try {
+      const { error } = await supabase
+        .from('changelog_entries')
+        .insert([
+          {
+            version: changelogVersion,
+            description: changelogDescription
+          }
+        ]);
+        
+      if (error) throw error;
+      
+      const { data: changelog } = await supabase
+        .from('changelog_entries')
+        .select('*')
+        .order('version', { ascending: false });
+        
+      if (changelog) {
+        setChangelogEntries(changelog);
+      }
+      
+      setChangelogVersion("");
+      setChangelogDescription("");
+      
+      toast({
+        title: "запись добавлена",
+        description: "Новая запись успешно добавлена в журнал изменений",
+      });
+    } catch (error) {
+      console.error("Error adding changelog entry:", error);
+      toast({
+        title: "ошибка",
+        description: "не удалось добавить запись",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangelogSaving(false);
+    }
+  };
+
   if (!user) return null;
   
   const isAdmin = user.role === 'admin';
@@ -338,6 +468,119 @@ export default function SettingsPage() {
               </Button>
             </CardFooter>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>версия системы</CardTitle>
+              <CardDescription>
+                управление версией системы и информацией об обновлении
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="system-version">версия</Label>
+                  <Input
+                    id="system-version"
+                    value={systemVersion}
+                    onChange={(e) => setSystemVersion(e.target.value)}
+                    placeholder="1.1.2.1"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="last-update">последнее обновление</Label>
+                  <Input
+                    id="last-update"
+                    type="datetime-local"
+                    value={lastUpdate}
+                    onChange={(e) => setLastUpdate(e.target.value)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button 
+                onClick={handleSaveVersion} 
+                disabled={versionSaving}
+              >
+                {versionSaving ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    сохранение...
+                  </>
+                ) : (
+                  "сохранить версию"
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>журнал изменений</CardTitle>
+              <CardDescription>
+                управление записями в журнале изменений системы
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="changelog-version">версия</Label>
+                <Input
+                  id="changelog-version"
+                  value={changelogVersion}
+                  onChange={(e) => setChangelogVersion(e.target.value)}
+                  placeholder="1.1.2.1"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="changelog-description">описание изменений</Label>
+                <Textarea
+                  id="changelog-description"
+                  value={changelogDescription}
+                  onChange={(e) => setChangelogDescription(e.target.value)}
+                  placeholder="опишите изменения в этой версии..."
+                  className="min-h-[100px]"
+                />
+              </div>
+              
+              <Button 
+                onClick={handleAddChangelogEntry}
+                disabled={isChangelogSaving || !changelogVersion || !changelogDescription}
+                className="w-full"
+              >
+                {isChangelogSaving ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    добавление...
+                  </>
+                ) : (
+                  "добавить запись"
+                )}
+              </Button>
+              
+              <div className="mt-6 space-y-4">
+                <h4 className="text-sm font-medium">существующие записи</h4>
+                {changelogEntries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="border rounded-lg p-4 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-medium">Версия {entry.version}</h5>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(entry.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {entry.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </>
       )}
       
@@ -358,4 +601,4 @@ export default function SettingsPage() {
       )}
     </div>
   );
-};
+}
