@@ -33,21 +33,21 @@ export type Database = {
       changelog_entries: {
         Row: {
           created_at: string
-          description: string
+          description: string[]
           id: string
           updated_at: string
           version: string
         }
         Insert: {
           created_at?: string
-          description: string
+          description: string[]
           id?: string
           updated_at?: string
           version: string
         }
         Update: {
           created_at?: string
-          description?: string
+          description?: string[]
           id?: string
           updated_at?: string
           version?: string

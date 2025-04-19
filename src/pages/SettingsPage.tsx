@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw, Clock } from "lucide-react";
+import { RefreshCw, Plus, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
+import { ChangelogEntry } from "@/types";
 
 interface BannerSettings {
   title: string;
@@ -58,7 +59,7 @@ export default function SettingsPage() {
   const [versionSaving, setVersionSaving] = useState(false);
   
   const [changelogVersion, setChangelogVersion] = useState("");
-  const [changelogDescription, setChangelogDescription] = useState("");
+  const [changelogDescriptions, setChangelogDescriptions] = useState<string[]>([""]);
   const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
   const [isChangelogSaving, setIsChangelogSaving] = useState(false);
 
@@ -265,36 +266,61 @@ export default function SettingsPage() {
     }
   };
   
+  const handleAddChangelogDescriptionField = () => {
+    setChangelogDescriptions([...changelogDescriptions, ""]);
+  };
+
+  const handleChangeChangelogDescription = (index: number, value: string) => {
+    const newDescriptions = [...changelogDescriptions];
+    newDescriptions[index] = value;
+    setChangelogDescriptions(newDescriptions);
+  };
+
+  const handleRemoveChangelogDescription = (index: number) => {
+    const newDescriptions = changelogDescriptions.filter((_, i) => i !== index);
+    setChangelogDescriptions(newDescriptions);
+  };
+
   const handleAddChangelogEntry = async () => {
     if (!user || user.role !== 'admin') return;
+    
+    // Filter out empty descriptions
+    const filteredDescriptions = changelogDescriptions.filter(desc => desc.trim() !== "");
+    
+    if (!changelogVersion || filteredDescriptions.length === 0) {
+      toast({
+        title: "ошибка",
+        description: "Заполните версию и описание изменений",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsChangelogSaving(true);
     
     try {
-      // Use the Supabase client directly instead of raw fetch
       const { error } = await supabase
         .from('changelog_entries')
         .insert({
           version: changelogVersion,
-          description: changelogDescription
+          description: filteredDescriptions
         });
         
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
       // Refresh changelog entries
       const { data: changelog } = await supabase
         .from('changelog_entries')
         .select('*')
-        .order('version', { ascending: false });
+        .order('created_at', { ascending: false });
           
       if (changelog) {
         setChangelogEntries(changelog as ChangelogEntry[]);
       }
       
+      // Reset form
       setChangelogVersion("");
-      setChangelogDescription("");
+      setChangelogDescriptions([""]);
       
       toast({
         title: "запись добавлена",
@@ -309,6 +335,41 @@ export default function SettingsPage() {
       });
     } finally {
       setIsChangelogSaving(false);
+    }
+  };
+
+  const handleDeleteChangelogEntry = async (entryId: string) => {
+    if (!user || user.role !== 'admin') return;
+    
+    try {
+      const { error } = await supabase
+        .from('changelog_entries')
+        .delete()
+        .eq('id', entryId);
+      
+      if (error) throw error;
+      
+      // Refresh changelog entries
+      const { data: changelog } = await supabase
+        .from('changelog_entries')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (changelog) {
+        setChangelogEntries(changelog as ChangelogEntry[]);
+      }
+      
+      toast({
+        title: "запись удалена",
+        description: "Запись успешно удалена из журнала изменений",
+      });
+    } catch (error) {
+      console.error("Error deleting changelog entry:", error);
+      toast({
+        title: "ошибка",
+        description: "не удалось удалить запись",
+        variant: "destructive",
+      });
     }
   };
 
@@ -544,19 +605,44 @@ export default function SettingsPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="changelog-description">описание изменений</Label>
-                <Textarea
-                  id="changelog-description"
-                  value={changelogDescription}
-                  onChange={(e) => setChangelogDescription(e.target.value)}
-                  placeholder="опишите изменения в этой версии..."
-                  className="min-h-[100px]"
-                />
+                <Label>описание изменений</Label>
+                {changelogDescriptions.map((description, index) => (
+                  <div key={index} className="flex items-center space-x-2 mb-2">
+                    <Textarea
+                      value={description}
+                      onChange={(e) => handleChangeChangelogDescription(index, e.target.value)}
+                      placeholder={`изменение ${index + 1}`}
+                      className="flex-1"
+                    />
+                    {changelogDescriptions.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 shrink-0 text-destructive"
+                        onClick={() => handleRemoveChangelogDescription(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleAddChangelogDescriptionField}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  добавить изменение
+                </Button>
               </div>
               
               <Button 
                 onClick={handleAddChangelogEntry}
-                disabled={isChangelogSaving || !changelogVersion || !changelogDescription}
+                disabled={isChangelogSaving || !changelogVersion}
                 className="w-full"
               >
                 {isChangelogSaving ? (
@@ -575,17 +661,37 @@ export default function SettingsPage() {
                   changelogEntries.map((entry) => (
                     <div
                       key={entry.id}
-                      className="border rounded-lg p-4 space-y-2"
+                      className="border rounded-lg p-4 space-y-2 relative"
                     >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 text-destructive"
+                        onClick={() => handleDeleteChangelogEntry(entry.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                       <div className="flex items-center justify-between">
                         <h5 className="font-medium">Версия {entry.version}</h5>
                         <span className="text-xs text-muted-foreground">
                           {new Date(entry.created_at).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {entry.description}
-                      </p>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        {Array.isArray(entry.description) ? (
+                          entry.description.map((change, index) => (
+                            <div key={index} className="flex items-start">
+                              <span className="mr-2 text-muted-foreground">•</span>
+                              <span className="text-foreground">{change}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex items-start">
+                            <span className="mr-2 text-muted-foreground">•</span>
+                            <span className="text-foreground">{entry.description}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))
                 ) : (
