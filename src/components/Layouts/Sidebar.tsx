@@ -15,6 +15,20 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 
+interface SystemSetting {
+  key: string;
+  value: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ChangelogEntry {
+  id: string;
+  version: string;
+  description: string | string[];
+  created_at: string;
+}
+
 export default function Sidebar() {
   const { user } = useAuth();
   const { userCanAccessTicket } = useTickets();
@@ -25,37 +39,51 @@ export default function Sidebar() {
   const [showChangelog, setShowChangelog] = useState(false);
   const [systemVersion, setSystemVersion] = useState("");
   const [lastUpdate, setLastUpdate] = useState("");
-  const [changelogEntries, setChangelogEntries] = useState([]);
+  const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
 
   useEffect(() => {
     const fetchSystemInfo = async () => {
-      const { data: settings } = await supabase
-        .from('system_settings')
-        .select('*');
-        
-      if (settings) {
-        settings.forEach(setting => {
-          if (setting.key === 'system_version') {
-            setSystemVersion(setting.value ?? '');
-          } else if (setting.key === 'last_update') {
-            setLastUpdate(setting.value ?? '');
-          }
-        });
-      }
-      
       try {
+        const { data: settings, error: settingsError } = await supabase
+          .from('system_settings')
+          .select('*') as { data: SystemSetting[] | null; error: any };
+          
+        if (settingsError) {
+          console.error("Error fetching system settings:", settingsError);
+          return;
+        }
+
+        if (settings) {
+          settings.forEach((setting) => {
+            if (setting.key === 'system_version') {
+              setSystemVersion(setting.value ?? '');
+            } else if (setting.key === 'last_update') {
+              setLastUpdate(setting.value ?? '');
+            }
+          });
+        }
+        
         const { data, error } = await supabase
-          .from('changelog_entries')
+          .from('system_settings')
           .select('*')
-          .order('version', { ascending: false });
+          .eq('key', 'changelog_entries')
+          .single() as { data: SystemSetting | null; error: any };
           
         if (error) {
           console.error("Error fetching changelog:", error);
-        } else if (data) {
-          setChangelogEntries(data);
+          return;
+        }
+
+        if (data && typeof data.value === 'string') {
+          try {
+            const parsedEntries = JSON.parse(data.value) as ChangelogEntry[];
+            setChangelogEntries(parsedEntries);
+          } catch (parseError) {
+            console.error("Error parsing changelog entries:", parseError);
+          }
         }
       } catch (error) {
-        console.error("Error fetching changelog:", error);
+        console.error("Error fetching system info:", error);
       }
     };
     
@@ -71,28 +99,9 @@ export default function Sidebar() {
         fetchSystemInfo();
       })
       .subscribe();
-    
-    let changelogSubscription;
-    try {
-      changelogSubscription = supabase
-        .channel('changelog_changes')
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'changelog_entries'
-        }, () => {
-          fetchSystemInfo();
-        })
-        .subscribe();
-    } catch (error) {
-      console.error("Error subscribing to changelog:", error);
-    }
       
     return () => {
       systemSettingsSubscription.unsubscribe();
-      if (changelogSubscription) {
-        changelogSubscription.unsubscribe();
-      }
     };
   }, []);
   
@@ -235,15 +244,23 @@ export default function Sidebar() {
                       </span>
                     </div>
                     {Array.isArray(entry.description) ? (
-                      <ul className="text-sm list-disc list-inside space-y-1">
+                      <div className="text-sm space-y-1">
                         {entry.description.map((change, index) => (
-                          <li key={index} className="text-foreground before:text-muted-foreground before:mr-2 before:content-['·']">
-                            {change}
-                          </li>
+                          <div key={index} className="flex items-start">
+                            <span className="mr-2 text-muted-foreground">•</span>
+                            <span className="text-foreground">{change}</span>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     ) : (
-                      <p className="text-sm whitespace-pre-wrap">{entry.description}</p>
+                      <div className="text-sm space-y-1">
+                        {(entry.description || '').split('\n').map((line, index) => (
+                          <div key={index} className="flex items-start">
+                            <span className="mr-2 text-muted-foreground">•</span>
+                            <span className="text-foreground">{line.trim()}</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 ))

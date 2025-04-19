@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ interface Outcome {
   id: string;
   name: string;
   description: string;
-  icon: React.ComponentType;
+  icon: React.FC<React.SVGProps<SVGSVGElement>>;
   possible: boolean;
 }
 
@@ -164,7 +164,7 @@ export default function CasinoPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
-                      <outcome.icon className="h-5 w-5" />
+                      {React.createElement(outcome.icon, { strokeWidth: 1.5 })}
                       {outcome.name}
                     </CardTitle>
                   </CardHeader>

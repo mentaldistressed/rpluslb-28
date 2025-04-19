@@ -41,3 +41,10 @@ export interface ActivityItem {
   date: string;
   time: string;
 }
+
+export interface ChangelogEntry {
+  id: string;
+  version: string;
+  description: string | string[];
+  created_at: string;
+}
