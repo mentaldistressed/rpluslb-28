@@ -32,11 +32,9 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch current news banner content
   useEffect(() => {
     const fetchNewsContent = async () => {
       setIsLoading(true);
-      // Use a more generic approach to query the table without relying on type checking
       const { data, error } = await supabase
         .from('system_settings')
         .select('*')
