@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      changelog_entries: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       message_reads: {
         Row: {
           id: string
@@ -123,6 +147,45 @@ export type Database = {
           value?: string | null
         }
         Relationships: []
+      }
+      ticket_ratings: {
+        Row: {
+          created_at: string | null
+          id: string
+          rating: number
+          ticket_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rating: number
+          ticket_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rating?: number
+          ticket_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_ratings_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tickets: {
         Row: {
