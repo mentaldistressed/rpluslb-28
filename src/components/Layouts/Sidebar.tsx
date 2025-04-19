@@ -223,7 +223,7 @@ export default function Sidebar() {
           <span>v{systemVersion || "1.0.0"}</span>
         </button>
         <p className="text-xs text-muted-foreground px-3">
-          последнее обновление: {formattedLastUpdate}
+          последнее обновление системы: {formattedLastUpdate}
         </p>
       </div>
       
@@ -263,7 +263,7 @@ export default function Sidebar() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">История изменений пока пуста.</p>
+                <p className="text-sm text-muted-foreground">история изменений пока пуста</p>
               )}
             </div>
           </ScrollArea>

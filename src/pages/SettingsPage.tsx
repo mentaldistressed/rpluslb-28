@@ -624,7 +624,7 @@ export default function SettingsPage() {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                       <div className="flex items-center justify-between">
-                        <h5 className="font-medium">Версия {entry.version}</h5>
+                        <h5 className="font-medium">версия {entry.version}</h5>
                         <span className="text-xs text-muted-foreground">
                           {new Date(entry.created_at).toLocaleDateString()}
                         </span>
