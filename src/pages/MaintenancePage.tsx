@@ -48,7 +48,6 @@ export default function MaintenancePage() {
     fetchMaintenanceSettings();
   }, []);
 
-  // Update the countdown timer
   useEffect(() => {
     if (!endTime) return;
     

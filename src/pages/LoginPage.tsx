@@ -17,7 +17,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Redirect to dashboard if already logged in
   useEffect(() => {
     if (user) {
       navigate("/dashboard");

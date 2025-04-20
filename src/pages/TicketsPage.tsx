@@ -35,12 +35,10 @@ export default function TicketsPage() {
   useEffect(() => {
     if (!user) return;
     
-    // Filter tickets based on user role
     let userTickets = user.role === 'admin' 
-      ? [...tickets] // Admins see all tickets
-      : tickets.filter(ticket => ticket.createdBy === user.id); // Sublabels see only their tickets
+      ? [...tickets]
+      : tickets.filter(ticket => ticket.createdBy === user.id);
     
-    // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       userTickets = userTickets.filter(ticket => 
@@ -49,12 +47,10 @@ export default function TicketsPage() {
       );
     }
     
-    // Apply status filter
     if (statusFilter !== "all") {
       userTickets = userTickets.filter(ticket => ticket.status === statusFilter);
     }
     
-    // Sort by latest updated first
     userTickets.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     
     setFilteredTickets(userTickets);
