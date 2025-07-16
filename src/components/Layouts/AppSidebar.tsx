@@ -270,7 +270,7 @@ export default function AppSidebar() {
               <FileText className="h-4 w-4" />
               <div className="flex flex-col items-start">
                 <span className="text-xs font-medium">v{systemVersion || "1.0.0"}</span>
-                <span className="text-xs opacity-60">обновлено: {formattedLastUpdate}</span>
+                <span className="text-xs opacity-60">обновление системы: {formattedLastUpdate}</span>
               </div>
             </button>
           )}
