@@ -43,12 +43,12 @@ export default function Header() {
           <ThemeToggle />
           
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            {/* <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-full">
                 <UserAvatar user={user} size="sm" />
                 <span className="font-medium text-sm hidden sm:inline-block">{user.name}</span>
               </Button>
-            </DropdownMenuTrigger>
+            </DropdownMenuTrigger> */}
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
