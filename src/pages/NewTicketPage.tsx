@@ -55,7 +55,7 @@ export default function NewTicketPage() {
         <CardHeader>
           <CardTitle>создание нового тикета</CardTitle>
           <CardDescription>
-            заполните информацию для создания нового тикета
+            пожалуйста, заполните нужную информацию для отправки нового тикета
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -102,7 +102,7 @@ export default function NewTicketPage() {
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "создание..." : "создать тикет"}
+              {isLoading ? "отправка..." : "отправить тикет"}
             </Button>
           </CardFooter>
         </form>
