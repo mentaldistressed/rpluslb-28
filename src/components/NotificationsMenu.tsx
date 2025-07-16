@@ -296,14 +296,14 @@ export function NotificationsMenu() {
   
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      {/* <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {hasUnread && (
             <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
           )}
         </Button>
-      </DropdownMenuTrigger>
+      </DropdownMenuTrigger> */}
       <DropdownMenuContent className="w-96" align="end" forceMount>
         <div className="flex items-center justify-between px-4 py-2">
           <DropdownMenuLabel className="text-base font-semibold">

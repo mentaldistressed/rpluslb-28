@@ -207,7 +207,7 @@ export default function TicketDetailPage() {
           </div>
           
           <div className="flex flex-wrap items-center gap-2 md:justify-end mt-2 md:mt-0">
-            <PriorityBadge priority={ticket.priority} />
+            {/* <PriorityBadge priority={ticket.priority} /> */}
             
             {canChangeStatus ? (
               <Select
@@ -232,7 +232,7 @@ export default function TicketDetailPage() {
         
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-1 order-2 md:order-1">
-            <Card className="mb-6">
+            {/* <Card className="mb-6">
               <CardHeader className="pb-3 flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">описание</CardTitle>
                 {firstMessage && (
@@ -255,7 +255,7 @@ export default function TicketDetailPage() {
                   </Button>
                 )}
               </CardContent>
-            </Card>
+            </Card> */}
             
             <div className="border rounded-lg bg-card shadow-sm overflow-hidden">
               <div className="p-4 border-b bg-muted/30 flex items-center">

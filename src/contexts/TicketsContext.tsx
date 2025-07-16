@@ -55,7 +55,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      console.log("Уведомление успешно отправлено:", data);
       return true;
     } catch (error) {
       // console.error("Ошибка вызова функции отправки уведомления:", error);
@@ -147,7 +146,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         schema: 'public', 
         table: 'tickets' 
       }, async (payload) => {
-        console.log('Ticket INSERT received:', payload);
         const newTicket = payload.new as any;
         
         setTickets(prevTickets => [
@@ -212,7 +210,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         schema: 'public', 
         table: 'tickets' 
       }, async (payload) => {
-        console.log('Ticket UPDATE received:', payload);
         const updatedTicket = payload.new as any;
         const oldTicket = payload.old as any;
         
@@ -292,12 +289,10 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         schema: 'public', 
         table: 'tickets' 
       }, (payload) => {
-        console.log('Ticket DELETE received:', payload);
         const deletedTicket = payload.old as any;
         setTickets(prevTickets => prevTickets.filter(ticket => ticket.id !== deletedTicket.id));
       })
       .subscribe((status) => {
-        console.log("Tickets subscription status:", status);
       });
       
     const messagesChannel = supabase
@@ -307,7 +302,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         schema: 'public', 
         table: 'messages' 
       }, async (payload) => {
-        console.log('Message INSERT received:', payload);
         const newMessage = payload.new as any;
         
         setMessages(prevMessages => [
@@ -408,7 +402,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         schema: 'public', 
         table: 'messages' 
       }, (payload) => {
-        console.log('Message UPDATE received:', payload);
         const updatedMessage = payload.new as any;
         setMessages(prevMessages => prevMessages.map(message => 
           message.id === updatedMessage.id ? {
@@ -423,12 +416,10 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         schema: 'public', 
         table: 'messages' 
       }, (payload) => {
-        console.log('Message DELETE received:', payload);
         const deletedMessage = payload.old as any;
         setMessages(prevMessages => prevMessages.filter(message => message.id !== deletedMessage.id));
       })
       .subscribe((status) => {
-        console.log("Messages subscription status:", status);
       });
       
     const profilesChannel = supabase
@@ -438,7 +429,6 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         schema: 'public', 
         table: 'profiles' 
       }, (payload) => {
-        console.log('Profiles change received:', payload);
         
         if (payload.eventType === 'INSERT') {
           const newProfile = payload.new as any;
@@ -469,11 +459,9 @@ export function TicketsProvider({ children }: { children: ReactNode }) {
         }
       })
       .subscribe((status) => {
-        console.log("Profiles subscription status:", status);
       });
       
     return () => {
-      console.log("Cleaning up Supabase channels");
       supabase.removeChannel(ticketsChannel);
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(profilesChannel);

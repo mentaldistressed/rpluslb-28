@@ -64,9 +64,9 @@ export function TicketCard({ ticket, creatorName, showCreator = false, className
           </div>
           <div className="flex flex-col gap-2 items-end flex-shrink-0">
             <StatusBadge status={ticket.status} />
-            <Badge className={cn("text-xs px-2 py-1", getPriorityColor(ticket.priority))}>
+            {/* <Badge className={cn("text-xs px-2 py-1", getPriorityColor(ticket.priority))}>
               {getPriorityLabel(ticket.priority)}
-            </Badge>
+            </Badge> */}
           </div>
         </div>
       </CardHeader>

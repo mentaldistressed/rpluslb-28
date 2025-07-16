@@ -41,7 +41,6 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       throw new Error(`SMTP configuration is incomplete: ${configIssues.join(", ")}`);
     }
 
-    console.log(`Attempting to send email to ${to} via ${SMTP_HOST}:${SMTP_PORT}`);
     
     // Establish SMTP connection with debug mode enabled
     const client = new SMTPClient({
@@ -58,7 +57,6 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
     });
 
     // Add proper encoding information to ensure Cyrillic text renders correctly
-    console.log("Attempting to send email with UTF-8 encoding:", {
       from: FROM_EMAIL,
       to: to,
       subject: subject
@@ -78,7 +76,6 @@ const sendEmailWithSMTP = async (to: string, subject: string, body: string) => {
       },
     });
 
-    console.log("Email sent successfully, result:", result);
     await client.close();
     return true;
   } catch (error) {
@@ -133,12 +130,10 @@ serve(async (req) => {
     
     // Log the request body for debugging
     const requestText = await req.text();
-    console.log("Raw request body:", requestText);
     
     let payload: EmailPayload;
     try {
       payload = JSON.parse(requestText);
-      console.log("Parsed email request:", JSON.stringify(payload, null, 2));
     } catch (parseError) {
       console.error("Error parsing request JSON:", parseError);
       return new Response(
@@ -157,14 +152,7 @@ serve(async (req) => {
       );
     }
     
-    // Log SMTP configuration (without password)
-    console.log("SMTP Config:", {
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      user: SMTP_USER,
-      fromEmail: FROM_EMAIL,
-      hasPassword: !!SMTP_PASSWORD
-    });
+  
     
     const success = await sendEmailWithSMTP(to, subject, body);
     

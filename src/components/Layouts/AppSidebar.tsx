@@ -189,8 +189,8 @@ export default function AppSidebar() {
                 <span className="text-sm font-semibold text-foreground truncate">
                   {user.name}
                 </span>
-                <span className="text-xs text-muted-foreground capitalize">
-                  {user.role === 'admin' ? 'Администратор' : 'Пользователь'}
+                <span className="text-xs text-muted-foreground">
+                  {user.role === 'admin' ? 'администратор' : 'пользователь'}
                 </span>
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function AppSidebar() {
           
           <SidebarGroup>
             <SidebarGroupLabel className={cn("px-2 text-xs font-semibold tracking-wider", collapsed && "sr-only")}>
-              {isAdmin ? "Управление" : "Навигация"}
+              {isAdmin ? "управление" : "навигация"}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -290,7 +290,7 @@ export default function AppSidebar() {
           <SheetHeader>
             <SheetTitle className="text-lg font-semibold flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Журнал изменений
+              журнал изменений
             </SheetTitle>
           </SheetHeader>
           <ScrollArea className="h-[calc(100vh-100px)] mt-6">

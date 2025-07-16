@@ -61,11 +61,11 @@ export default function TicketsPage() {
           aValue = a.status;
           bValue = b.status;
           break;
-        case 'priority':
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
-          bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
-          break;
+        // case 'priority':
+        //   const priorityOrder = { high: 3, medium: 2, low: 1 };
+        //   aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+        //   bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+        //   break;
         case 'created':
           aValue = new Date(a.createdAt).getTime();
           bValue = new Date(b.createdAt).getTime();
@@ -95,14 +95,14 @@ export default function TicketsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            {isAdmin ? 'Управление тикетами' : 'Мои тикеты'}
+            {isAdmin ? 'управление тикетами' : 'мои тикеты'}
           </h1>
           <p className="text-muted-foreground mt-1">
             {filteredTickets.length} {filteredTickets.length === 1 ? 'тикет' : 'тикетов'}
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <div className="flex items-center border rounded-lg p-1 bg-muted/30">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -127,7 +127,7 @@ export default function TicketsPage() {
               <List className="h-4 w-4" />
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Filters and Search */}
@@ -136,7 +136,7 @@ export default function TicketsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Поиск по названию или описанию тикетов..."
+              placeholder="поиск по названию или описанию тикетов..."
               className="pl-9 bg-background/50 border-border/50 focus:bg-background"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -147,13 +147,13 @@ export default function TicketsPage() {
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[160px] bg-background/50 border-border/50">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Все статусы" />
+                <SelectValue placeholder="все статусы" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Все статусы</SelectItem>
-                <SelectItem value="open">Открытые</SelectItem>
-                <SelectItem value="in-progress">В обработке</SelectItem>
-                <SelectItem value="closed">Закрытые</SelectItem>
+                <SelectItem value="all">все статусы</SelectItem>
+                <SelectItem value="open">открытые</SelectItem>
+                <SelectItem value="in-progress">в обработке</SelectItem>
+                <SelectItem value="closed">закрытые</SelectItem>
               </SelectContent>
             </Select>
 
@@ -163,11 +163,10 @@ export default function TicketsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="updated">По дате изменения</SelectItem>
-                <SelectItem value="created">По дате создания</SelectItem>
-                <SelectItem value="title">По названию</SelectItem>
-                <SelectItem value="status">По статусу</SelectItem>
-                <SelectItem value="priority">По приоритету</SelectItem>
+                <SelectItem value="updated">по дате изменения</SelectItem>
+                <SelectItem value="created">по дате создания</SelectItem>
+                <SelectItem value="title">по названию</SelectItem>
+                <SelectItem value="status">по статусу</SelectItem>
               </SelectContent>
             </Select>
 
@@ -211,17 +210,17 @@ export default function TicketsPage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
               <Search className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Тикетов не найдено</h3>
+            <h3 className="text-lg font-semibold mb-2">тикетов не найдено</h3>
             <p className="text-muted-foreground mb-6">
-              Нет тикетов, соответствующих заданным критериям поиска. 
-              Попробуйте изменить фильтры или создать новый тикет.
+              нет тикетов, соответствующих заданным критериям поиска
+              попробуйте изменить фильтры или создать новый тикет
             </p>
             
             {user.role === 'sublabel' && (
               <Link to="/tickets/new">
                 <Button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
                   <Plus className="mr-2 h-4 w-4" />
-                  Создать новый тикет
+                  создать новый тикет
                 </Button>
               </Link>
             )}
