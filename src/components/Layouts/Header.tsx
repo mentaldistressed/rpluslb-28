@@ -55,7 +55,7 @@ export default function Header() {
                     {user.email}
                   </p>
                   <p className="text-xs font-medium text-muted-foreground mt-1">
-                    {user.role === 'admin' ? 'администратор' : 'саб-лейбл'}
+                    {user.role === 'admin' ? 'администратор' : 'партнер'}
                   </p>
                 </div>
               </DropdownMenuLabel>

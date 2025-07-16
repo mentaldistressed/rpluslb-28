@@ -275,7 +275,7 @@ export default function UsersPage() {
                   id="name"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="название саб-лейбла или имя пользователя"
+                  placeholder="наименование партнера или имя пользователя"
                 />
               </div>
               
@@ -344,7 +344,7 @@ export default function UsersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">администратор</SelectItem>
-                    <SelectItem value="sublabel">саб-лейбл</SelectItem>
+                    <SelectItem value="sublabel">партнер</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -402,7 +402,7 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        {user.role === 'admin' ? 'администратор' : 'саб-лейбл'}
+                        {user.role === 'admin' ? 'администратор' : 'партнер'}
                       </TableCell>
                     </TableRow>
                   ))

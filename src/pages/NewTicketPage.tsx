@@ -83,7 +83,7 @@ export default function NewTicketPage() {
               />
             </div>
             
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="priority">приоритет</Label>
               <Select
                 value={priority}
@@ -98,7 +98,7 @@ export default function NewTicketPage() {
                   <SelectItem value="high">высокий</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading}>

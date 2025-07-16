@@ -19,7 +19,7 @@ export default function LoginPage() {
   
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      navigate("/tickets");
     }
   }, [user, navigate]);
 
@@ -29,7 +29,7 @@ export default function LoginPage() {
     try {
       const success = await login(email, password);
       if (success) {
-        navigate("/dashboard");
+        navigate("/tickets");
       }
     } catch (error) {
       console.error("Login error:", error);

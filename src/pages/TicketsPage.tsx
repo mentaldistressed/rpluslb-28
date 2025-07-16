@@ -106,9 +106,9 @@ export default function TicketsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>тикет</TableHead>
+                <TableHead>заголовок</TableHead>
                 <TableHead>статус</TableHead>
-                <TableHead>приоритет</TableHead>
+                {/* <TableHead>приоритет</TableHead> */}
                 <TableHead>последнее обновление</TableHead>
                 {user.role === 'admin' && <TableHead>отправитель</TableHead>}
               </TableRow>
@@ -127,9 +127,9 @@ export default function TicketsPage() {
                     <TableCell>
                       <StatusBadge status={ticket.status} />
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <PriorityBadge priority={ticket.priority} />
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="text-muted-foreground">
                       {format(new Date(ticket.updatedAt), "dd.MM.yyyy HH:mm")}
                     </TableCell>

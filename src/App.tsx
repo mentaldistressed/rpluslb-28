@@ -66,7 +66,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user || user.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/tickets" replace />;
   }
   
   return <>{children}</>;
@@ -86,9 +86,9 @@ const App = () => (
                 <Route 
                   path="/dashboard" 
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <DashboardPage />
-                    </ProtectedRoute>
+                    </AdminRoute>
                   } 
                 />
 
@@ -104,11 +104,11 @@ const App = () => (
                 <Route 
                   path="/tools" 
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <Suspense fallback={<div>загрузка...</div>}>
                         <ToolsPage />
                       </Suspense>
-                    </ProtectedRoute>
+                    </AdminRoute>
                   } 
                 />
                 

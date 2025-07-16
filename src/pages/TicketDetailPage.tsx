@@ -439,12 +439,12 @@ export default function TicketDetailPage() {
                   </div>
                 </div>
                 
-                <div className="space-y-2 pb-3 border-b">
+                {/* <div className="space-y-2 pb-3 border-b">
                   <div className="text-sm font-medium">приоритет</div>
                   <div>
                     <PriorityBadge priority={ticket.priority} />
                   </div>
-                </div>
+                </div> */}
                 
                 <div className="space-y-2 pb-3 border-b">
                   <div className="text-sm font-medium">отправитель</div>

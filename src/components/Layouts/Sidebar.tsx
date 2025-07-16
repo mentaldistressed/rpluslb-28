@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Ticket, Users, Plus, Settings, Landmark, 
-  Home, Hammer, Coins, FileText 
+  Home, Hammer, Coins, FileText, Music
 } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -114,29 +114,29 @@ export default function Sidebar() {
   
   const navItems = [
     ...(isUser ? [
-      {
-        name: "главная",
-        href: "/dashboard",
-        icon: Home,
-        active: location.pathname === '/dashboard'
-      },
+      // {
+      //   name: "главная",
+      //   href: "/dashboard",
+      //   icon: Home,
+      //   active: location.pathname === '/dashboard'
+      // },
       {
         name: "мои тикеты",
         href: "/tickets",
         icon: Ticket,
         active: location.pathname.startsWith('/tickets')
       },
+      // {
+      //   name: "мои финансы",
+      //   href: "/finances",
+      //   icon: Landmark,
+      //   active: location.pathname.startsWith('/finances')
+      // },
       {
-        name: "мои финансы",
-        href: "/finances",
-        icon: Landmark,
-        active: location.pathname.startsWith('/finances')
-      },
-      {
-        name: "инструменты",
-        href: "/tools",
-        icon: Hammer,
-        active: location.pathname.startsWith('/tools')
+        name: "синхронизация текста",
+        href: "/tools/sync",
+        icon: Music,
+        active: location.pathname.startsWith('/tools/sync')
       }
     ] : []),
     ...(isAdmin ? [
@@ -158,12 +158,12 @@ export default function Sidebar() {
         icon: Users,
         active: location.pathname.startsWith('/users')
       },
-      {
-        name: "управление финансами",
-        href: "/finances",
-        icon: Landmark,
-        active: location.pathname.startsWith('/finances')
-      },
+      // {
+      //   name: "управление финансами",
+      //   href: "/finances",
+      //   icon: Landmark,
+      //   active: location.pathname.startsWith('/finances')
+      // },
       {
         name: "инструменты",
         href: "/tools",
