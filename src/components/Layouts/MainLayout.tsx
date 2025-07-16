@@ -2,8 +2,9 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Header from "./Header";
-import Sidebar from "./Sidebar";
+import AppSidebar from "./AppSidebar";
 import { NewsBanner } from "@/components/NewsBanner";
 import { supabase } from "@/integrations/supabase/client";
 import MaintenancePage from "@/pages/MaintenancePage";
@@ -105,11 +106,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <div className="flex flex-col flex-1">
-        <div className="flex flex-1">
-          <Sidebar />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background/95 to-background/90">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col">
+          <Header />
           <main className="flex-1 p-6 overflow-auto animate-fade-in">
             <div className="mb-6 max-w-7xl mx-auto">
               <NewsBanner />
@@ -121,6 +122,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </div>
       </div>
       <Toaster />
-    </div>
+    </SidebarProvider>
   );
 }
