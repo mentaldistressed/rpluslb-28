@@ -217,7 +217,7 @@ export default function AppSidebar() {
                   {user.name}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {user.role === 'admin' ? 'администратор' : 'партнер'}
+                  {user.role === 'admin' ? 'администратор' : 'любимый партнер'}
                 </span>
               </div>
             </div>
