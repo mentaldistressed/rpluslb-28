@@ -96,7 +96,9 @@ const App = () => (
                   path="/tickets" 
                   element={
                     <ProtectedRoute>
-                      <TicketsPage />
+                      <Suspense fallback={<div>загрузка...</div>}>
+                        <TicketsPage />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -137,9 +139,11 @@ const App = () => (
                 <Route 
                   path="/tickets/new" 
                   element={
-                    <AdminRoute>
-                      <NewTicketPage />
-                    </AdminRoute>
+                    <ProtectedRoute>
+                      <Suspense fallback={<div>загрузка...</div>}>
+                        <NewTicketPage />
+                      </Suspense>
+                    </ProtectedRoute>
                   } 
                 />
                 
