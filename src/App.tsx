@@ -137,9 +137,9 @@ const App = () => (
                 <Route 
                   path="/tickets/new" 
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <NewTicketPage />
-                    </ProtectedRoute>
+                    </AdminRoute>
                   } 
                 />
                 
@@ -164,9 +164,9 @@ const App = () => (
                 <Route 
                   path="/finances" 
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <FinancesPage />
-                    </ProtectedRoute>
+                    </AdminRoute>
                   } 
                 />
                 

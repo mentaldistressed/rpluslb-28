@@ -16,9 +16,17 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Ticket, Users, Plus, Settings, Landmark, 
-  Home, Hammer, FileText, Music, ChevronRight, User
+  Home, Hammer, FileText, Music, ChevronRight, User, LogOut
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -35,7 +43,7 @@ interface SystemSetting {
 }
 
 export default function AppSidebar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { state } = useSidebar();
   const location = useLocation();
   const collapsed = state === 'collapsed';
@@ -183,14 +191,33 @@ export default function AppSidebar() {
           {!collapsed && (
             <div className="flex items-center gap-3 px-2">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <User className="w-4 h-4 text-primary" />
+              <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2 h-10 px-2 rounded-full"><User className="w-4 h-4 text-primary" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="center" forceMount>
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>выйти</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-foreground truncate">
                   {user.name}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {user.role === 'admin' ? 'администратор' : 'пользователь'}
+                  {user.role === 'admin' ? 'администратор' : 'партнер'}
                 </span>
               </div>
             </div>
@@ -201,11 +228,11 @@ export default function AppSidebar() {
           {isUser && (
             <SidebarGroup>
               <SidebarGroupContent>
-                <div className="px-2 pb-4">
+                <div className="px-10">
                   <Link to="/tickets/new">
                     <Button 
                       className={cn(
-                        "w-full justify-start font-medium transition-all duration-200 group bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-lg hover:shadow-xl",
+                        "justify-start font-medium transition-all duration-200 group bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-lg hover:shadow-xl",
                         collapsed ? "px-2" : "px-4"
                       )} 
                       size={collapsed ? "icon" : "default"}
