@@ -102,7 +102,7 @@ export default function TicketsPage() {
           </p>
         </div>
         
-        {/* <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <div className="flex items-center border rounded-lg p-1 bg-muted/30">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -110,7 +110,7 @@ export default function TicketsPage() {
               onClick={() => setViewMode('grid')}
               className={cn(
                 "h-8 px-3",
-                viewMode === 'grid' && "bg-background shadow-sm"
+                viewMode === 'grid'
               )}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -121,13 +121,13 @@ export default function TicketsPage() {
               onClick={() => setViewMode('list')}
               className={cn(
                 "h-8 px-3",
-                viewMode === 'list' && "bg-background shadow-sm"
+                viewMode === 'list'
               )}
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
-        </div> */}
+        </div>
       </div>
 
       {/* Filters and Search */}
